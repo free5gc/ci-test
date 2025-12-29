@@ -55,6 +55,9 @@ main() {
         ;;
         "up")
             case "$2" in
+                "basic-charging")
+                    docker compose -f docker-compose-basic.yaml up
+                ;;
                 "ulcl-ti")
                     docker compose -f docker-compose-ulcl-ti.yaml up
                 ;;
@@ -67,6 +70,9 @@ main() {
         ;;
         "down")
             case "$2" in
+                "basic-charging")
+                    docker compose -f docker-compose-basic.yaml down
+                ;;
                 "ulcl-ti")
                     docker compose -f docker-compose-ulcl-ti.yaml down
                 ;;
@@ -79,6 +85,9 @@ main() {
         ;;
         "test")
             case "$2" in
+                "basic-charging")
+                    docker exec ci /bin/bash -c "cd /root/test && ./test-basic-charging.sh"
+                ;;
                 "ulcl-ti")
                     docker exec ci /bin/bash -c "cd /root/test && ./test-ulcl-ti.sh TestULCLTrafficInfluence"
                 ;;

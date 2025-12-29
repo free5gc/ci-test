@@ -6,12 +6,12 @@
     },
     "interGroupId": "AnyUE",
     "trafficFilters": [
-    {
-        "flowId": 1,
-        "flowDescriptions": [
-            "permit out ip from 10.100.0.0/16 to 10.60.0.0/16"
-        ]
-    }
+        {
+            "flowId": 1,
+            "flowDescriptions": [
+                "permit out ip from 10.100.0.0/16 to 10.60.0.0/16"
+            ]
+        }
     ],
     "trafficRoutes": [
         {

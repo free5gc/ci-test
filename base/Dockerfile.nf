@@ -16,6 +16,8 @@ RUN cd $GOPATH/src/free5gc \
 # Alpine is used for debug purpose. You can use scratch for a smaller footprint.
 FROM alpine:3.15
 
+ARG F5GC_MODULE
+
 WORKDIR /free5gc
 RUN mkdir -p cert/ public
 

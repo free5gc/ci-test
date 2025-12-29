@@ -11,10 +11,13 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TI_DATA_JSON="$SCRIPT_DIR/json/ti-data.json"
+
 # ti data request
 case "$1" in
     "put")
-        curl -X PUT -H "Content-Type: application/json" --data @json/ti-data.json \
+        curl -X PUT -H "Content-Type: application/json" --data @"$TI_DATA_JSON" \
             http://udr.free5gc.org:8000/nudr-dr/v2/application-data/influenceData/1
         ;;
     "get")
