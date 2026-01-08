@@ -23,11 +23,11 @@ echo "Running test... $1"
 
 case "$1" in
     "TestULCLMultiPathCi1")
-        docker exec ci-1 /bin/bash -c "cd test && ./test-ulcl-mp.sh $1"
+        docker exec ue-1 /bin/bash -c "cd test && ./test-ulcl-mp.sh $1"
         exit_code=$?
     ;;
     "TestULCLMultiPathCi2")
-        docker exec ci-2 /bin/bash -c "cd test && ./test-ulcl-mp.sh $1"
+        docker exec ue-2 /bin/bash -c "cd test && ./test-ulcl-mp.sh $1"
         exit_code=$?
     ;;
 esac
