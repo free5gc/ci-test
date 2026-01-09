@@ -92,8 +92,8 @@ main() {
                     docker exec ue /bin/bash -c "cd /root/test && ./test-ulcl-ti.sh TestULCLTrafficInfluence"
                 ;;
                 "ulcl-mp")
-                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathCi1"
-                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathCi2"
+                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe1"
+                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe2"
                 ;;
                 *)
                     usage
