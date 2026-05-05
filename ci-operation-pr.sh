@@ -118,6 +118,30 @@ log_fail() {
     echo -e "${RED}[FAIL] $1${NC}"
 }
 
+SUDO_KEEPALIVE_PID=""
+
+cleanup_sudo_keepalive() {
+    if [ -n "$SUDO_KEEPALIVE_PID" ]; then
+        kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+    fi
+}
+
+ensure_sudo_credentials() {
+    log_info "Refreshing sudo credentials..."
+    if ! sudo -v; then
+        log_fail "Failed to validate sudo credentials"
+        exit 1
+    fi
+
+    # Keep sudo credentials fresh so later build/test steps do not block mid-run.
+    while true; do
+        sudo -n -v 2>/dev/null || exit
+        sleep 60
+    done &
+    SUDO_KEEPALIVE_PID=$!
+    trap cleanup_sudo_keepalive EXIT
+}
+
 is_nf() {
     local name=$1
     [[ " $SUPPORTED_NFS " =~ " $name " ]]
@@ -340,6 +364,8 @@ echo ""
 # Ensure we're in ci-test directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+
+ensure_sudo_credentials
 
 # Create report directory and fix permissions if needed
 mkdir -p "$REPORT_DIR"
