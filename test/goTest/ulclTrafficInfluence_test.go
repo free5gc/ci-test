@@ -63,7 +63,7 @@ func pingN6gwSuccessMecFailed(t *testing.T) {
 func pingN6gwFailedMecSuccess(t *testing.T) {
 	err := pinger.Pinger(N6GW_IP, NIC_1)
 	if err == nil {
-		t.Errorf("Ping n6gw success: expected ping failed, but got success")		t.Errorf("Ping n6gw success: expected ping failed, but got %v", err)
+		t.Errorf("Ping n6gw success: expected ping failed, but got success")
 	}
 	err = pinger.Pinger(MEC_IP, NIC_1)
 	if err != nil {
