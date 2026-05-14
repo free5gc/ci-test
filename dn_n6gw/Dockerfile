@@ -1,4 +1,4 @@
-FROM bitnami/minideb:bookworm
+FROM bitnami/minideb:bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG DEBUG_TOOLS

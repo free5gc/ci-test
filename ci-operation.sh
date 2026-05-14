@@ -19,82 +19,10 @@ usage() {
     echo "  - fetch [NF] [PR#]: fetch the target NF's PR"
     echo "  - testAll: run all free5gc tests"
     echo "  - build: build the necessary images"
-    echo "  - up <basic-charging | ulcl-ti | ulcl-mp>: bring up the compose in detached mode and wait for readiness"
-    echo "  - down <basic-charging | ulcl-ti | ulcl-mp>: shut down the compose and remove orphans"
+    echo "  - up <basic-charging | ulcl-ti | ulcl-mp>: bring up the compose"
+    echo "  - down <basic-charging | ulcl-ti | ulcl-mp>: shut down the compose"
     echo "  - test <basic-charging | ulcl-ti | ulcl-mp>: run ULCL test"
     echo "  - exec <ue | ue-1 | ue-2>: enter the ue container"
-}
-
-required_images_for_target() {
-    echo "free5gc/base:latest"
-    echo "free5gc/upf-base:latest"
-    echo "free5gc/nrf-base:latest"
-    echo "free5gc/amf-base:latest"
-    echo "free5gc/ausf-base:latest"
-    echo "free5gc/nssf-base:latest"
-    echo "free5gc/pcf-base:latest"
-    echo "free5gc/smf-base:latest"
-    echo "free5gc/udm-base:latest"
-    echo "free5gc/udr-base:latest"
-    echo "free5gc/chf-base:latest"
-    echo "free5gc/nef-base:latest"
-    echo "free5gc/webconsole-base:latest"
-}
-
-check_required_images() {
-    local target="$1"
-    local missing_images=()
-    local image
-
-    while IFS= read -r image; do
-        if ! docker image inspect "$image" >/dev/null 2>&1; then
-            missing_images+=("$image")
-        fi
-    done < <(required_images_for_target "$target")
-
-    if [ ${#missing_images[@]} -gt 0 ]; then
-        echo "Error: required local images are missing for scenario '$target':"
-        for image in "${missing_images[@]}"; do
-            echo "  - $image"
-        done
-        echo ""
-        echo "Please build images first:"
-        echo "  sudo ./ci-operation.sh build"
-        return 1
-    fi
-
-    return 0
-}
-
-compose_file_for_target() {
-    case "$1" in
-        "basic-charging")
-            echo "docker-compose-basic.yaml"
-        ;;
-        "ulcl-ti")
-            echo "docker-compose-ulcl-ti.yaml"
-        ;;
-        "ulcl-mp")
-            echo "docker-compose-ulcl-mp.yaml"
-        ;;
-        *)
-            return 1
-    esac
-}
-
-cleanup_other_scenarios() {
-    local target="$1"
-    local scenario
-    local compose_file
-
-    for scenario in basic-charging ulcl-ti ulcl-mp; do
-        if [ "$scenario" = "$target" ]; then
-            continue
-        fi
-
-        compose_file=$(compose_file_for_target "$scenario") || continue
-        docker compose -f "$compose_file" down --remove-orphans >/dev/null 2>&1 || true
-    done
 }
 
 main() {
@@ -126,15 +54,35 @@ main() {
             make nfs
         ;;
         "up")
-            compose_file=$(compose_file_for_target "$2") || { usage; exit 1; }
-            check_required_images "$2" || exit 1
-            cleanup_other_scenarios "$2"
+            case "$2" in
+                "basic-charging")
+                    docker compose -f docker-compose-basic.yaml up --build
+                ;;
+                "ulcl-ti")
+                    docker compose -f docker-compose-ulcl-ti.yaml up --build
 
-            docker compose -f "$compose_file" up -d --wait --wait-timeout "${COMPOSE_WAIT_TIMEOUT:-300}"
+                ;;
+                "ulcl-mp")
+                    docker compose -f docker-compose-ulcl-mp.yaml up --build
+                ;;
+                *)
+                    usage
+            esac
         ;;
         "down")
-            compose_file=$(compose_file_for_target "$2") || { usage; exit 1; }
-            docker compose -f "$compose_file" down --remove-orphans
+            case "$2" in
+                "basic-charging")
+                    docker compose -f docker-compose-basic.yaml down
+                ;;
+                "ulcl-ti")
+                    docker compose -f docker-compose-ulcl-ti.yaml down
+                ;;
+                "ulcl-mp")
+                    docker compose -f docker-compose-ulcl-mp.yaml down
+                ;;
+                *)
+                    usage
+            esac
         ;;
         "test")
             case "$2" in

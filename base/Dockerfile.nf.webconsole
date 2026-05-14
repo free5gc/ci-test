@@ -11,8 +11,8 @@ COPY free5gc/ $GOPATH/src/free5gc/
 
 # # Install Nodejs20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y nodejs
+    && apt update \
+    && apt install nodejs -y
 
 RUN cd $GOPATH/src/free5gc \
     && apt-get update \
