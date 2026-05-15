@@ -1,5 +1,11 @@
 # ci-test
 
+| Requirement | Link | Version |
+| - | - | - |
+| go |  | v1.26.2 |
+| nsct | [https://github.com/Alonza0314/nsctl](https://github.com/Alonza0314/nsctl) | latest |
+| gtp5g | [https://github.com/free5gc/gtp5g](https://github.com/free5gc/gtp5g) | v0.9.16 |
+
 ## Topology
 
 | Network | Subnets |
@@ -31,4 +37,3 @@
 | UPF | | | | 10.3.0.1 | 10.4.0.2 | 10.6.0.1 |
 | n6gw | | | | | | 10.6.0.2 |
 | test | | | 10.2.0.2 | 10.3.0.2 | | |
-
