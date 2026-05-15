@@ -56,13 +56,14 @@ main() {
         "up")
             case "$2" in
                 "basic-charging")
-                    docker compose -f docker-compose-basic.yaml up
+                    docker compose -f docker-compose-basic.yaml up --build
                 ;;
                 "ulcl-ti")
-                    docker compose -f docker-compose-ulcl-ti.yaml up
+                    docker compose -f docker-compose-ulcl-ti.yaml up --build
+
                 ;;
                 "ulcl-mp")
-                    docker compose -f docker-compose-ulcl-mp.yaml up
+                    docker compose -f docker-compose-ulcl-mp.yaml up --build
                 ;;
                 *)
                     usage
