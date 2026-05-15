@@ -54,7 +54,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Config
-TEST_POOL="TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestNasReroute"
+TEST_POOL="TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestNasReroute TestOAuth2Callback"
 TNGF_TIMEOUT=300
 TEST_TIMEOUT=300
 DOCKER_TIMEOUT=300
