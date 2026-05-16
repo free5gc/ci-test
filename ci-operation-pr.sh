@@ -54,7 +54,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Config
-TEST_POOL="TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestNasReroute TestDC TestDynamicDC TestXnDCHandover TestNon3GPP"
+TEST_POOL="TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestNasReroute TestDC TestDynamicDC TestXnDCHandover TestNon3GPP TestOAuth2Callback"
 TNGF_TIMEOUT=300
 TEST_TIMEOUT=300
 DOCKER_TIMEOUT=300
@@ -756,7 +756,11 @@ if [ "$SKIP_TESTALL" = false ]; then
         log_info "Running $test..."
         
         # Run test and save output (like ./test.sh All does)
-        if timeout $TEST_TIMEOUT sudo ./test.sh $test &> testing_output/$test.log; then
+        TEST_ARGS=""
+        if [ "$test" == "TestOAuth2Callback" ]; then
+            TEST_ARGS="oauth"
+        fi
+        if timeout $TEST_TIMEOUT sudo ./test.sh $test $TEST_ARGS &> testing_output/$test.log; then
             # Check if PASS in output
             if grep -q "PASS" testing_output/$test.log; then
                 log_pass "$test"

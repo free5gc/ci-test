@@ -16,6 +16,8 @@ configuration:
   serviceList: # the SBI services provided by this NEF
     - serviceName: nnef-pfdmanagement # Nnef_PFDManagement Service
     - serviceName: nnef-oam # OAM service
+    - serviceName: 3gpp-traffic-influence # 3GPP Traffic Influence Service
+    - serviceName: nnef-callback # Inbound callback (SMF event exposure notify)
 
 logger: # log output setting
   enable: true # true or false
