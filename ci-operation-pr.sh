@@ -9,7 +9,7 @@
 #   ./ci-operation-pr.sh nf <NF1> <PR1> [<PR2> ...] [<NF2> <PR3> ...] [OPTIONS]
 #   ./ci-operation-pr.sh nf <NF1> <PR1> [...] lib <LIB1> <PR1> [...] [OPTIONS]
 #   ./ci-operation-pr.sh lib <LIBRARY> <PR#> [OPTIONS]
-#   ./ci-operation-pr.sh free5gc <PR#> nf <NF1> <PR1> [<NF2> <PR2> ...] [OPTIONS]
+#   ./ci-operation-pr.sh free5gc <PR#> [nf <NF1> <PR1> [<NF2> <PR2> ...]] [OPTIONS]
 #
 # OPTIONS:
 #   --skip-docker    Skip Docker Compose tests
@@ -76,7 +76,7 @@ usage() {
     echo "  $0 nf <NF1> <PR1> [<PR2> ...] [<NF2> <PR3> ...] [OPTIONS]"
     echo "  $0 nf <NF1> <PR1> [...] lib <LIB1> <PR1> [...] [OPTIONS]"
     echo "  $0 lib <LIBRARY> <PR#> [OPTIONS]"
-    echo "  $0 free5gc <PR#> nf <NF1> <PR1> [<NF2> <PR2> ...] [OPTIONS]"
+    echo "  $0 free5gc <PR#> [nf <NF1> <PR1> [<NF2> <PR2> ...]] [OPTIONS]"
     echo ""
     echo "OPTIONS:"
     echo "  --skip-docker    Skip Docker Compose tests"
@@ -89,6 +89,7 @@ usage() {
     echo "  $0 nf smf 170 183 udm 80 81 amf 50 # Multiple NFs with multiple PRs"
     echo "  $0 nf udm 76 lib util 37           # NF PR + library PR combined"
     echo "  $0 lib openapi 67"
+    echo "  $0 free5gc 787                     # Test main repo PR #787 only"
     echo "  $0 free5gc 787 nf amf 194          # Test main repo PR #787 with AMF PR #194"
     echo ""
     echo "Supported NFs: $SUPPORTED_NFS"
@@ -151,14 +152,20 @@ is_number() {
     [[ "$1" =~ ^[0-9]+$ ]]
 }
 
-# Check minimum args
-if [ $# -lt 3 ]; then
-    usage
-fi
-
 # Parse type
 TYPE=$1
 shift
+
+# Check minimum args based on command type
+if [ "$TYPE" = "free5gc" ]; then
+    if [ $# -lt 1 ]; then
+        usage
+    fi
+else
+    if [ $# -lt 2 ]; then
+        usage
+    fi
+fi
 
 # Parse optional flags first (find and remove them from args)
 SKIP_DOCKER=false
@@ -186,10 +193,10 @@ FREE5GC_PR=""
 
 case $TYPE in
     free5gc)
-        # Format: free5gc <PR#> nf <NF1> <PR1> [<NF2> <PR2> ...]
-        if [ ${#REMAINING_ARGS[@]} -lt 4 ]; then
-            echo "Error: free5gc PR number and at least one NF with PR required"
-            echo "Format: $0 free5gc <PR#> nf <NF1> <PR1> ..."
+        # Format: free5gc <PR#> [nf <NF1> <PR1> [<NF2> <PR2> ...]]
+        if [ ${#REMAINING_ARGS[@]} -lt 1 ]; then
+            echo "Error: free5gc PR number required"
+            echo "Format: $0 free5gc <PR#> [nf <NF1> <PR1> ...]"
             usage
         fi
         
@@ -200,41 +207,43 @@ case $TYPE in
         fi
         FREE5GC_PR="${REMAINING_ARGS[0]}"
         
-        # Second argument should be 'nf'
-        if [ "${REMAINING_ARGS[1]}" != "nf" ]; then
-            echo "Error: Expected 'nf' after free5gc PR number, got '${REMAINING_ARGS[1]}'"
-            usage
-        fi
-        
-        # Parse remaining NF/PR pairs (starting from index 2)
-        CURRENT_NF=""
-        for ((i=2; i<${#REMAINING_ARGS[@]}; i++)); do
-            arg="${REMAINING_ARGS[$i]}"
-            if is_nf "$arg"; then
-                CURRENT_NF="$arg"
-                if [ -z "${NF_PRS[$CURRENT_NF]}" ]; then
-                    NF_PRS[$CURRENT_NF]=""
-                fi
-            elif is_number "$arg"; then
-                if [ -z "$CURRENT_NF" ]; then
-                    echo "Error: PR number '$arg' without NF name"
-                    usage
-                fi
-                if [ -z "${NF_PRS[$CURRENT_NF]}" ]; then
-                    NF_PRS[$CURRENT_NF]="$arg"
-                else
-                    NF_PRS[$CURRENT_NF]="${NF_PRS[$CURRENT_NF]} $arg"
-                fi
-            else
-                echo "Error: Unknown argument '$arg' (not a valid NF or PR number)"
+        # Optional second argument can start NF parsing.
+        if [ ${#REMAINING_ARGS[@]} -gt 1 ]; then
+            if [ "${REMAINING_ARGS[1]}" != "nf" ]; then
+                echo "Error: Expected 'nf' after free5gc PR number, got '${REMAINING_ARGS[1]}'"
                 usage
             fi
-        done
-        
-        # Validate that we have at least one NF with PRs
-        if [ ${#NF_PRS[@]} -eq 0 ]; then
-            echo "Error: No valid NF/PR pairs found"
-            usage
+
+            if [ ${#REMAINING_ARGS[@]} -lt 4 ]; then
+                echo "Error: 'nf' was provided but no NF/PR pairs were found"
+                echo "Format: $0 free5gc <PR#> nf <NF1> <PR1> ..."
+                usage
+            fi
+
+            # Parse remaining NF/PR pairs (starting from index 2)
+            CURRENT_NF=""
+            for ((i=2; i<${#REMAINING_ARGS[@]}; i++)); do
+                arg="${REMAINING_ARGS[$i]}"
+                if is_nf "$arg"; then
+                    CURRENT_NF="$arg"
+                    if [ -z "${NF_PRS[$CURRENT_NF]}" ]; then
+                        NF_PRS[$CURRENT_NF]=""
+                    fi
+                elif is_number "$arg"; then
+                    if [ -z "$CURRENT_NF" ]; then
+                        echo "Error: PR number '$arg' without NF name"
+                        usage
+                    fi
+                    if [ -z "${NF_PRS[$CURRENT_NF]}" ]; then
+                        NF_PRS[$CURRENT_NF]="$arg"
+                    else
+                        NF_PRS[$CURRENT_NF]="${NF_PRS[$CURRENT_NF]} $arg"
+                    fi
+                else
+                    echo "Error: Unknown argument '$arg' (not a valid NF or PR number)"
+                    usage
+                fi
+            done
         fi
         
         # Set TYPE to nf for later processing, but remember we have FREE5GC_PR
