@@ -1,0 +1,27 @@
+==========================================
+free5GC PR Test Report
+==========================================
+Date: Wed Jun 17 07:32:54 PM CST 2026
+Type: nf
+Main free5gc Repo PR: #1062
+NF/PR Configuration:
+
+[STEP 1] Pull: SKIPPED
+[STEP 2] Fetch/Merge PRs:
+  - free5gc #1062: MERGED
+[STEP 3] Build: SUCCESS
+[STEP 4] Unit Tests: SKIPPED
+[STEP 5] Docker Build: SUCCESS
+
+[STEP 6] Docker Compose Tests:
+  basic: FAIL
+  ulcl-ti: PASS
+  ulcl-mp: PASS
+
+  Summary:
+    Passed: ulcl-ti ulcl-mp
+    Failed: basic
+
+==========================================
+Test Complete: Wed Jun 17 07:37:45 PM CST 2026
+==========================================

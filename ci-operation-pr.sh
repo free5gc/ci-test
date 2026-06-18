@@ -881,7 +881,7 @@ if [ "$SKIP_DOCKER" = false ]; then
             log_warn "Failed to start $scenario"
             DOCKER_FAILED="$DOCKER_FAILED $scenario"
             echo "  $scenario: FAIL (compose up failed)" >> "$REPORT_FILE"
-            sudo docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
+            sudo docker compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true
             continue
         fi
         sleep 5
