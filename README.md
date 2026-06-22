@@ -6,7 +6,7 @@
 
 ### Basic
 
-- [BasicCharging](./doc/basicCharging.md)
+- [RegPduCharging](./doc/RegPduCharging.md)
 
 ### ULCL
 

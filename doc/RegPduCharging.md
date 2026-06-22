@@ -1,4 +1,4 @@
-# Basic Charging
+# Reg Pdu Charging
 
 ## Topology
 
@@ -9,12 +9,12 @@ ci - gnb - upf
 ## Test Command
 
 ```bash
-./ci-test-basic.sh TestBasicCharging
+./ci-test-basic.sh TestRegPduCharging
 ```
 
 ## Test File
 
-- [basicCharging_test.go](../test/goTest/basicCharging_test.go)
+- [e2e_regPduCharging_test.go](../test/goTest//e2e_regPduCharging_test.go)
 
 ## Test Cases
 

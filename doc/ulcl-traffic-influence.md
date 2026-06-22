@@ -8,7 +8,7 @@
 
 ## Test File
 
-- [ulclTrafficInfluence_test.go](../test/goTest/ulclTrafficInfluence_test.go)
+- [e2e_ulclTrafficInfluence_test.go](../test/goTest/e2e_ulclTrafficInfluence_test.go)
 
 ## Test Cases
 

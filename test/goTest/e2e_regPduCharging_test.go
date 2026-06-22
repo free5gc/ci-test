@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var testBasicChargingCases = []struct {
+var testRegPduChargingCases = []struct {
 	name        string
 	destination string
 }{
@@ -21,14 +21,14 @@ var testBasicChargingCases = []struct {
 	},
 }
 
-func TestBasicCharging(t *testing.T) {
+func TestRegPduCharging(t *testing.T) {
 	fru := freeRanUE.NewFreeRanUe()
 	fru.Activate()
 	defer fru.Deactivate()
 
 	time.Sleep(5 * time.Second)
 
-	for _, testCase := range testBasicChargingCases {
+	for _, testCase := range testRegPduChargingCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			if err := pinger.Pinger(testCase.destination, NIC_1); err != nil {
 				t.Errorf("Ping %s failed: expected ping success, but got %v", testCase.destination, err)

@@ -3,16 +3,16 @@
 ##########################
 #
 # usage:
-# ./test-basic-charging.sh
+# ./test-reg-pdu-charging.sh
 #
-# e.g. ./test-e2e-basic-charging.sh
+# e.g. ./test-e2e-reg-pdu-charging.sh
 #
 ##########################
 
-echo "test basic offline charging"
+echo "test reg pdu offline charging"
 
 # post ue (ci-test PacketRusher) data to db
-./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-basic-charging-offline.json
+./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-reg-pdu-charging-offline.json
 if [ $? -ne 0 ]; then
     echo "Failed to post subscription data"
     exit 1
@@ -20,21 +20,21 @@ fi
 
 # run test
 cd goTest
-go test -v -vet=off -run TestBasicCharging
+go test -v -vet=off -run TestRegPduCharging
 go_test_exit_code=$?
 cd ..
 
 # delete ue (ci-test PacketRusher) data from db
-./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-basic-charging-offline.json
+./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-reg-pdu-charging-offline.json
 if [ $? -ne 0 ]; then
     echo "Failed to delete subscription data"
     exit 1
 fi
 
-echo "test basic online charging"
+echo "test reg pdu online charging"
 
 # post ue (ci-test PacketRusher) data to db
-./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-basic-charging-online.json
+./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-reg-pdu-charging-online.json
 if [ $? -ne 0 ]; then
     echo "Failed to post subscription data"
     exit 1
@@ -42,12 +42,12 @@ fi
 
 # run test
 cd goTest
-go test -v -vet=off -run TestBasicCharging
+go test -v -vet=off -run TestRegPduCharging
 go_test_exit_code=$?
 cd ..
 
 # delete ue (ci-test PacketRusher) data from db
-./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-basic-charging-online.json
+./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-reg-pdu-charging-online.json
 if [ $? -ne 0 ]; then
     echo "Failed to delete subscription data"
     exit 1

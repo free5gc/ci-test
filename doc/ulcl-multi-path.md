@@ -15,7 +15,7 @@ ci2(ue2) - gnb2 - i-upf2 - psa-upf2
 
 ## Test File
 
-- [ulclMultiPath_test.go](../test/goTest/ulclMultiPath_test.go)
+- [e2e_ulclMultiPath_test.go](../test/goTest/e2e_ulclMultiPath_test.go)
 
 ## Test Cases
 

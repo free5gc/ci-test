@@ -90,7 +90,7 @@ main() {
         "test")
             case "$2" in
                 "basic")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-basic-charging.sh"
+                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-reg-pdu-charging.sh"
                 ;;
                 "ulcl-ti")
                     docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-ulcl-ti.sh TestULCLTrafficInfluence"

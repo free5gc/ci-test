@@ -5,11 +5,11 @@
 # usage:
 # ./ci-test-basic.sh <test-name>
 #
-# e.g. ./ci-test-basic.sh TestBasicCharging
+# e.g. ./ci-test-basic.sh TestRegPduCharging
 #
 ##########################
 
-TEST_POOL="TestBasicCharging"
+TEST_POOL="TestRegPduCharging"
 
 # check if the test name is in the allowed test pool
 if [[ ! "$1" =~ ^($TEST_POOL)$ ]]; then
@@ -22,8 +22,8 @@ fi
 echo "Running test... $1"
 
 case "$1" in
-    "TestBasicCharging")
-        docker exec ue /bin/bash -c "cd test && ./test-e2e-basic-charging.sh"
+    "TestRegPduCharging")
+        docker exec ue /bin/bash -c "cd test && ./test-e2e-reg-pdu-charging.sh"
         exit_code=$?
     ;;
 esac
