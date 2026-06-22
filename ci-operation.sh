@@ -27,6 +27,10 @@ usage() {
 
 COMPOSE_DIR="composes/build"
 
+E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
+E2E_TI_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl-ti.yaml"
+E2E_MP_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl-mp.yaml"
+
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
         usage
@@ -55,15 +59,14 @@ main() {
         ;;
         "up")
             case "$2" in
-                "basic-charging")
-                    docker compose -f $COMPOSE_DIR/docker-compose-basic.yaml up --build
+                "basic")
+                    docker compose -f $E2E_BASIC_COMPOSE_FILE up --build
                 ;;
                 "ulcl-ti")
-                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-ti.yaml up --build
-
+                    docker compose -f $E2E_TI_COMPOSE_FILE up --build
                 ;;
                 "ulcl-mp")
-                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-mp.yaml up --build
+                    docker compose -f $E2E_MP_COMPOSE_FILE up --build
                 ;;
                 *)
                     usage
@@ -71,14 +74,14 @@ main() {
         ;;
         "down")
             case "$2" in
-                "basic-charging")
-                    docker compose -f $COMPOSE_DIR/docker-compose-basic.yaml down
+                "basic")
+                    docker compose -f $E2E_BASIC_COMPOSE_FILE down
                 ;;
                 "ulcl-ti")
-                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-ti.yaml down
+                    docker compose -f $E2E_TI_COMPOSE_FILE down
                 ;;
                 "ulcl-mp")
-                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-mp.yaml down
+                    docker compose -f $E2E_MP_COMPOSE_FILE down
                 ;;
                 *)
                     usage
@@ -86,15 +89,15 @@ main() {
         ;;
         "test")
             case "$2" in
-                "basic-charging")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-basic-charging.sh"
+                "basic")
+                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-basic-charging.sh"
                 ;;
                 "ulcl-ti")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-ulcl-ti.sh TestULCLTrafficInfluence"
+                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-ulcl-ti.sh TestULCLTrafficInfluence"
                 ;;
                 "ulcl-mp")
-                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe1"
-                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe2"
+                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe1"
+                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe2"
                 ;;
                 *)
                     usage

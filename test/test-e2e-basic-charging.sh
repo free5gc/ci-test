@@ -5,7 +5,7 @@
 # usage:
 # ./test-basic-charging.sh
 #
-# e.g. ./test-basic-charging.sh
+# e.g. ./test-e2e-basic-charging.sh
 #
 ##########################
 

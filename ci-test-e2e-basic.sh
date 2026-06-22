@@ -23,7 +23,7 @@ echo "Running test... $1"
 
 case "$1" in
     "TestBasicCharging")
-        docker exec ue /bin/bash -c "cd test && ./test-basic-charging.sh"
+        docker exec ue /bin/bash -c "cd test && ./test-e2e-basic-charging.sh"
         exit_code=$?
     ;;
 esac
