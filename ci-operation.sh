@@ -25,6 +25,8 @@ usage() {
     echo "  - exec <ue | ue-1 | ue-2>: enter the ue container"
 }
 
+COMPOSE_DIR="composes/build"
+
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
         usage
@@ -54,14 +56,14 @@ main() {
         "up")
             case "$2" in
                 "basic-charging")
-                    docker compose -f docker-compose-basic.yaml up --build
+                    docker compose -f $COMPOSE_DIR/docker-compose-basic.yaml up --build
                 ;;
                 "ulcl-ti")
-                    docker compose -f docker-compose-ulcl-ti.yaml up --build
+                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-ti.yaml up --build
 
                 ;;
                 "ulcl-mp")
-                    docker compose -f docker-compose-ulcl-mp.yaml up --build
+                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-mp.yaml up --build
                 ;;
                 *)
                     usage
@@ -70,13 +72,13 @@ main() {
         "down")
             case "$2" in
                 "basic-charging")
-                    docker compose -f docker-compose-basic.yaml down
+                    docker compose -f $COMPOSE_DIR/docker-compose-basic.yaml down
                 ;;
                 "ulcl-ti")
-                    docker compose -f docker-compose-ulcl-ti.yaml down
+                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-ti.yaml down
                 ;;
                 "ulcl-mp")
-                    docker compose -f docker-compose-ulcl-mp.yaml down
+                    docker compose -f $COMPOSE_DIR/docker-compose-ulcl-mp.yaml down
                 ;;
                 *)
                     usage
