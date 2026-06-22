@@ -85,7 +85,7 @@ services:
   free5gc-n6gw: # n6gw
     container_name: n6gw
     build:
-      context: ./dn_n6gw
+      context: ./dockerfiles/dn_n6gw
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./n6gw-iptables.sh && sleep infinity"
@@ -105,7 +105,7 @@ services:
   free5gc-mec: # mec
     container_name: mec
     build:
-      context: ./dn_mec
+      context: ./dockerfiles/dn_mec
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./mec-iptables.sh && sleep infinity"
@@ -368,7 +368,7 @@ services:
   ue-1:
     container_name: ue-1
     build:
-      context: ./ci
+      context: ./dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
@@ -416,7 +416,7 @@ services:
   ue-2:
     container_name: ue-2
     build:
-      context: ./ci
+      context: ./dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]

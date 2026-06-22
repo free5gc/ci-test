@@ -15,7 +15,7 @@
 
 usage() {
     echo "usage: ./ci-operation.sh [action] [target]"
-    echo "  - pull: remove the existed free5gc repo under base/ and clone a new free5gc with its NFs"
+    echo "  - pull: remove the existed free5gc repo and clone a new free5gc with its NFs"
     echo "  - fetch [NF] [PR#]: fetch the target NF's PR"
     echo "  - testAll: run all free5gc tests"
     echo "  - build: build the necessary images"
@@ -32,23 +32,21 @@ main() {
 
     case "$1" in
         "pull")
-            cd base
             rm -rf free5gc
             git clone -j `nproc` --recursive https://github.com/free5gc/free5gc
-            cd ..
         ;;
         "fetch")
-            cd base/free5gc/NFs/$2
+            cd free5gc/NFs/$2
             git fetch origin pull/$3/head:pr-$3
             git checkout pr-$3
-            cd ../../../../
+            cd ../../../
         ;;
         "testAll")
-            cd base/free5gc/
+            cd free5gc/
             make all
             ./force_kill.sh
             ./test.sh All
-            cd ../../
+            cd ../
         ;;
         "build")
             make nfs

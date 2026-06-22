@@ -15,7 +15,7 @@ services:
   free5gc-i-upf-1: # i-upf
     container_name: i-upf-1
     build:
-      context: ./nf_upf
+      context: ./dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
@@ -36,7 +36,7 @@ services:
   free5gc-i-upf-2: # i-upf
     container_name: i-upf-2
     build:
-      context: ./nf_upf
+      context: ./dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
@@ -57,7 +57,7 @@ services:
   free5gc-psa-upf-1: # psa-upf
     container_name: psa-upf-1
     build:
-      context: ./nf_upf
+      context: ./dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
@@ -77,7 +77,7 @@ services:
   free5gc-psa-upf-2: # psa-upf
     container_name: psa-upf-2
     build:
-      context: ./nf_upf
+      context: ./dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
@@ -97,7 +97,7 @@ services:
   free5gc-n6gw: # n6gw
     container_name: n6gw
     build:
-      context: ./dn_n6gw
+      context: ./dockerfiles/dn_n6gw
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./n6gw-iptables.sh && sleep infinity"
@@ -117,7 +117,7 @@ services:
   free5gc-mec: # mec
     container_name: mec
     build:
-      context: ./dn_mec
+      context: ./dockerfiles/dn_mec
       args:
         DEBUG_TOOLS: "false"
     command: bash -c "./mec-iptables.sh && sleep infinity"
@@ -137,7 +137,7 @@ services:
   free5gc-nrf: # nrf
     container_name: nrf
     build:
-      context: ./nf_nrf
+      context: ./dockerfiles/nf_nrf
       args:
         DEBUG_TOOLS: "false"
     command: ./nrf -c ./config/nrfcfg.yaml
@@ -159,7 +159,7 @@ services:
   free5gc-amf: # amf
     container_name: amf
     build:
-      context: ./nf_amf
+      context: ./dockerfiles/nf_amf
       args:
         DEBUG_TOOLS: "false"
     command: ./amf -c ./config/amfcfg.yaml
@@ -181,7 +181,7 @@ services:
   free5gc-ausf: # ausf
     container_name: ausf
     build:
-      context: ./nf_ausf
+      context: ./dockerfiles/nf_ausf
       args:
         DEBUG_TOOLS: "false"
     command: ./ausf -c ./config/ausfcfg.yaml
@@ -202,7 +202,7 @@ services:
   free5gc-nssf: # nssf
     container_name: nssf
     build:
-      context: ./nf_nssf
+      context: ./dockerfiles/nf_nssf
       args:
         DEBUG_TOOLS: "false"
     command: ./nssf -c ./config/nssfcfg.yaml
@@ -223,7 +223,7 @@ services:
   free5gc-pcf: # pcf
     container_name: pcf
     build:
-      context: ./nf_pcf
+      context: ./dockerfiles/nf_pcf
       args:
         DEBUG_TOOLS: "false"
     command: ./pcf -c ./config/pcfcfg.yaml
@@ -244,7 +244,7 @@ services:
   free5gc-smf: # smf
     container_name: smf
     build:
-      context: ./nf_smf
+      context: ./dockerfiles/nf_smf
       args:
         DEBUG_TOOLS: "false"
     command: ./smf -c ./config/smfcfg.yaml -u ./config/uerouting.yaml
@@ -270,7 +270,7 @@ services:
   free5gc-udm: # udm
     container_name: udm
     build:
-      context: ./nf_udm
+      context: ./dockerfiles/nf_udm
       args:
         DEBUG_TOOLS: "false"
     command: ./udm -c ./config/udmcfg.yaml
@@ -292,7 +292,7 @@ services:
   free5gc-udr: # udr
     container_name: udr
     build:
-      context: ./nf_udr
+      context: ./dockerfiles/nf_udr
       args:
         DEBUG_TOOLS: "false"
     command: ./udr -c ./config/udrcfg.yaml
@@ -315,7 +315,7 @@ services:
   free5gc-chf: # chf
     container_name: chf
     build:
-      context: ./nf_chf
+      context: ./dockerfiles/nf_chf
       args:
         DEBUG_TOOLS: "false"
     command: ./chf -c ./config/chfcfg.yaml
@@ -339,7 +339,7 @@ services:
   free5gc-nef: # nef
     container_name: nef
     build:
-      context: ./nf_nef
+      context: ./dockerfiles/nf_nef
       args:
         DEBUG_TOOLS: "false"
     command: ./nef -c ./config/nefcfg.yaml
@@ -361,7 +361,7 @@ services:
   free5gc-webui: # webui
     container_name: webui
     build:
-      context: ./webui
+      context: ./dockerfiles/webui
       args:
         DEBUG_TOOLS: "false"
     command: ./webui -c ./config/webuicfg.yaml
@@ -413,7 +413,7 @@ services:
   ue-1:
     container_name: ue-1
     build:
-      context: ./ci
+      context: ./dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
@@ -461,7 +461,7 @@ services:
   ue-2:
     container_name: ue-2
     build:
-      context: ./ci
+      context: ./dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]

@@ -267,7 +267,7 @@ services:
   ue:
     container_name: ue
     build:
-      context: ./ci
+      context: ./dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]

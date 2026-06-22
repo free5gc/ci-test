@@ -1,6 +1,6 @@
 FROM alonza0314/free-ran-ue:latest as fru
 
-FROM golang:1.25.5
+FROM golang:1.26.2
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH=$PATH:/usr/local/go/bin
