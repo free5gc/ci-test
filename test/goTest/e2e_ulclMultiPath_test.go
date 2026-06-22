@@ -12,8 +12,8 @@ var testMpCases = []struct {
 	destination string
 }{
 	{
-		name:        "DN",
-		destination: ONE_IP,
+		name:        "N6GW",
+		destination: N6GW_IP,
 	},
 	{
 		name:        "MEC",

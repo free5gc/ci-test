@@ -23,8 +23,8 @@ configuration:
         sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
       dnnInfos: # DNN information list
         - dnn: internet # Data Network Name
-          # dnaiList:
-          #   - mec
+          dnaiList:
+            - mec
           dns: # the IP address of DNS
             ipv4: 8.8.8.8
             ipv6: 2001:4860:4860::8888
@@ -33,8 +33,8 @@ configuration:
         sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
       dnnInfos: # DNN information list
         - dnn: internet # Data Network Name
-          # dnaiList:
-          #   - mec
+          dnaiList:
+            - mec
           dns: # the IP address of DNS
             ipv4: 8.8.8.8
             ipv6: 2001:4860:4860::8888
@@ -65,8 +65,8 @@ configuration:
               sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
             dnnUpfInfoList: # DNN information list for this S-NSSAI
               - dnn: internet
-                # dnaiList:
-                #   - mec
+                dnaiList:
+                  - mec
         interfaces: # Interface list for this UPF
           - interfaceType: N3 # the type of the interface (N3 or N9)
             endpoints: # the IP address of this N3/N9 interface on this UPF
@@ -87,8 +87,8 @@ configuration:
               sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
             dnnUpfInfoList: # DNN information list for this S-NSSAI
               - dnn: internet
-                # dnaiList:
-                #   - mec
+                dnaiList:
+                  - mec
         interfaces: # Interface list for this UPF
           - interfaceType: N3 # the type of the interface (N3 or N9)
             endpoints: # the IP address of this N3/N9 interface on this UPF
