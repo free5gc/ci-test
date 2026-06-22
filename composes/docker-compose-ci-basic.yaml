@@ -17,8 +17,8 @@ services:
     image: free5gc/upf:latest
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
     volumes:
-      - ./config/upfCfg.yaml:/free5gc/config/upfcfg.yaml
-      - ./config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
+      - ../config/upfCfg.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -34,8 +34,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/nrfCfg.yaml:/free5gc/config/nrfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/nrfCfg.yaml:/free5gc/config/nrfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -53,8 +53,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/amfCfg.yaml:/free5gc/config/amfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/amfCfg.yaml:/free5gc/config/amfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -72,8 +72,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/ausfCfg.yaml:/free5gc/config/ausfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/ausfCfg.yaml:/free5gc/config/ausfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -90,8 +90,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/nssfCfg.yaml:/free5gc/config/nssfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/nssfCfg.yaml:/free5gc/config/nssfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -108,8 +108,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/pcfCfg.yaml:/free5gc/config/pcfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/pcfCfg.yaml:/free5gc/config/pcfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -126,9 +126,9 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/smfCfg.yaml:/free5gc/config/smfcfg.yaml
-      - ./config/ueRoutingCfg.yaml:/free5gc/config/uerouting.yaml
-      - ./cert:/free5gc/cert
+      - ../config/smfCfg.yaml:/free5gc/config/smfcfg.yaml
+      - ../config/ueRoutingCfg.yaml:/free5gc/config/uerouting.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -146,8 +146,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/udmCfg.yaml:/free5gc/config/udmcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/udmCfg.yaml:/free5gc/config/udmcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -165,8 +165,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/udrCfg.yaml:/free5gc/config/udrcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/udrCfg.yaml:/free5gc/config/udrcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -185,8 +185,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/chfCfg.yaml:/free5gc/config/chfcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/chfCfg.yaml:/free5gc/config/chfcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -206,8 +206,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./config/nefCfg.yaml:/free5gc/config/nefcfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/nefCfg.yaml:/free5gc/config/nefcfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -225,8 +225,8 @@ services:
     expose:
       - "2121"
     volumes:
-      - ./config/webuiCfg.yaml:/free5gc/config/webuicfg.yaml
-      - ./cert:/free5gc/cert
+      - ../config/webuiCfg.yaml:/free5gc/config/webuicfg.yaml
+      - ../cert:/free5gc/cert
     environment:
       - GIN_MODE=release
     networks:
@@ -246,7 +246,7 @@ services:
     image: alonza0314/free-ran-ue:latest
     command: ./free-ran-ue gnb -c ./gnbcfg.yaml
     volumes:
-      - ./config/gnbCfg.yaml:/free-ran-ue/gnbcfg.yaml
+      - ../config/gnbCfg.yaml:/free-ran-ue/gnbcfg.yaml
     networks:
       privnet:
         ipv4_address: 10.100.200.50
@@ -267,13 +267,13 @@ services:
   ue:
     container_name: ue
     build:
-      context: ./dockerfiles/ci
+      context: ../dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
     volumes:
-      - ./config/ueCfg.yaml:/free-ran-ue/uecfg.yaml
-      - ./test:/root/test
+      - ../config/ueCfg.yaml:/free-ran-ue/uecfg.yaml
+      - ../test:/root/test
     cap_add:
       - NET_ADMIN
     devices:
