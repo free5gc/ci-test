@@ -30,7 +30,7 @@
 ## Test Steps
 
 1. Post ue subscription data to db via web console's api
-2. Activate PacketRusher
+2. Activate free-ue
 3. Run [test cases](#test-cases)
-4. Deactivate PacketRusher
+4. Deactivate free-ue
 5. Delete ue subscription data from db via web console's api
