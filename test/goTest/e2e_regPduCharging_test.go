@@ -1,8 +1,8 @@
 package test
 
 import (
-	freeRanUE "test/freeRanUE"
-	pinger "test/pinger"
+	"test/freeRanUe"
+	"test/pinger"
 	"testing"
 	"time"
 )
@@ -22,7 +22,7 @@ var testRegPduChargingCases = []struct {
 }
 
 func TestRegPduCharging(t *testing.T) {
-	fru := freeRanUE.NewFreeRanUe()
+	fru := freeRanUe.NewFreeRanUe()
 	fru.Activate()
 	defer fru.Deactivate()
 

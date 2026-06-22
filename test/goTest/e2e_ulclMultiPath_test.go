@@ -1,8 +1,8 @@
 package test
 
 import (
-	freeRanUE "test/freeRanUE"
-	pinger "test/pinger"
+	"test/freeRanUe"
+	"test/pinger"
 	"testing"
 	"time"
 )
@@ -22,7 +22,7 @@ var testMpCases = []struct {
 }
 
 func TestULCLMultiPathUe1(t *testing.T) {
-	fru := freeRanUE.NewFreeRanUe()
+	fru := freeRanUe.NewFreeRanUe()
 	fru.Activate()
 	defer fru.Deactivate()
 
@@ -38,7 +38,7 @@ func TestULCLMultiPathUe1(t *testing.T) {
 }
 
 func TestULCLMultiPathUe2(t *testing.T) {
-	fru := freeRanUE.NewFreeRanUe()
+	fru := freeRanUe.NewFreeRanUe()
 	fru.Activate()
 	defer fru.Deactivate()
 

@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	freeRanUE "test/freeRanUE"
-	pinger "test/pinger"
+	"test/freeRanUe"
+	"test/pinger"
 )
 
 func TestULCLTrafficInfluence(t *testing.T) {
 	// FreeRanUe
-	fru := freeRanUE.NewFreeRanUe()
+	fru := freeRanUe.NewFreeRanUe()
 	fru.Activate()
 	defer fru.Deactivate()
 
