@@ -23,7 +23,7 @@ echo "Running test... $1"
 
 case "$1" in
     "TestULCLTrafficInfluence")
-        docker exec ue /bin/bash -c "cd test && ./test-e2e-ulcl-ti.sh $1"
+        docker exec ue-0 /bin/bash -c "cd test && ./test-e2e-ulcl-ti.sh $1"
         exit_code=$?
     ;;
     "TestULCLMultiPathUe1")
