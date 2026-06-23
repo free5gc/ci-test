@@ -4,7 +4,6 @@ import (
 	"test/freeRanUe"
 	"test/pinger"
 	"testing"
-	"time"
 )
 
 var testRegPduChargingCases = []struct {
@@ -22,11 +21,19 @@ var testRegPduChargingCases = []struct {
 }
 
 func TestRegPduCharging(t *testing.T) {
-	fru := freeRanUe.NewFreeRanUe()
-	fru.Activate()
-	defer fru.Deactivate()
-
-	time.Sleep(5 * time.Second)
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
 
 	for _, testCase := range testRegPduChargingCases {
 		t.Run(testCase.name, func(t *testing.T) {

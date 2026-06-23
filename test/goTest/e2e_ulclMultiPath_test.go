@@ -22,9 +22,19 @@ var testMpCases = []struct {
 }
 
 func TestULCLMultiPathUe1(t *testing.T) {
-	fru := freeRanUe.NewFreeRanUe()
-	fru.Activate()
-	defer fru.Deactivate()
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
 
 	time.Sleep(5 * time.Second)
 
@@ -38,11 +48,19 @@ func TestULCLMultiPathUe1(t *testing.T) {
 }
 
 func TestULCLMultiPathUe2(t *testing.T) {
-	fru := freeRanUe.NewFreeRanUe()
-	fru.Activate()
-	defer fru.Deactivate()
-
-	time.Sleep(5 * time.Second)
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
 
 	for _, testCase := range testMpCases {
 		t.Run(testCase.name, func(t *testing.T) {

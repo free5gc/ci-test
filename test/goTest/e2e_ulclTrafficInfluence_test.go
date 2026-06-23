@@ -11,11 +11,19 @@ import (
 
 func TestULCLTrafficInfluence(t *testing.T) {
 	// FreeRanUe
-	fru := freeRanUe.NewFreeRanUe()
-	fru.Activate()
-	defer fru.Deactivate()
-
-	time.Sleep(3 * time.Second)
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
 
 	// before TI
 	t.Run("Before TI", func(t *testing.T) {
@@ -72,7 +80,7 @@ func pingN6gwFailedMecSuccess(t *testing.T) {
 }
 
 func pingOneOneOneOne(t *testing.T) {
-    err := pinger.Pinger(ONE_IP, NIC_1)
+	err := pinger.Pinger(ONE_IP, NIC_1)
 	if err != nil {
 		t.Errorf("Ping one.one.one.one failed: expected ping success, but got %v", err)
 	}
