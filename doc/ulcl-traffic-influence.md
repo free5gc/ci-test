@@ -1,5 +1,11 @@
 # ULCL Traffic Influence
 
+## Topology
+
+```text
+ci0(ue0) - gnb0 - i-upf0 - psa-upf0
+```
+
 ## Test Command
 
 ```bash
