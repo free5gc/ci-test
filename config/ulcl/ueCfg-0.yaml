@@ -1,6 +1,6 @@
 ue:
-  ranControlPlaneIp: "10.0.3.3" # RAN Control Plane IP open for UE connection
-  ranDataPlaneIp: "10.0.3.3" # RAN Data Plane IP open for UE connection
+  ranControlPlaneIp: "10.0.0.2" # RAN Control Plane IP open for UE connection
+  ranDataPlaneIp: "10.0.0.2" # RAN Data Plane IP open for UE connection
 
   ranControlPlanePort: 31413 # RAN Control Plane port open for UE connection
   ranDataPlanePort: 31414 # RAN Data Plane port open for UE connection
@@ -31,7 +31,7 @@ ue:
     dnn: "internet" # DNN
     snssai:
       sst: "1" # Slice/Service Type
-      sd: "010203" # Slice Differentiator
+      sd: "" # Slice Differentiator
 
   accessType: "3GPP_ACCESS" # 3GPP_ACCESS, NON_3GPP_ACCESS
 

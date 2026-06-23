@@ -1,6 +1,6 @@
 services:
   db: # mongodb
-    container_name: ci-mongodb
+    container_name: mongodb
     image: mongo:4.4
     command: mongod --port 27017 --quiet
     expose:
@@ -12,40 +12,110 @@ services:
         aliases:
           - db
 
-  free5gc-i-upf: # i-upf
-    container_name: i-upf
+  free5gc-i-upf-0: # i-upf
+    container_name: i-upf-0
     image: free5gc/upf:latest
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
     volumes:
-      - ../config/TI/i-upfCfg.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/ulcl/i-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
       - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
       privnet:
         aliases:
-          - i-upf.free5gc.org
-        ipv4_address: 10.100.200.8
+          - i-upf-0.free5gc.org
+        ipv4_address: 10.100.200.100
       mec-net:
         aliases:
-          - i-upf.mec.org
+          - i-upf-0.mec.org
 
-  free5gc-psa-upf: # psa-upf
-    container_name: psa-upf
+  free5gc-i-upf-1: # i-upf
+    container_name: i-upf-1
     image: free5gc/upf:latest
     command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
     volumes:
-      - ../config/TI/psa-upfCfg.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/ulcl/i-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
       - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
       privnet:
         aliases:
-          - psa-upf.free5gc.org
+          - i-upf-1.free5gc.org
+        ipv4_address: 10.100.200.101
+      mec-net:
+        aliases:
+          - i-upf-1.mec.org
+
+  free5gc-i-upf-2: # i-upf
+    container_name: i-upf-2
+    image: free5gc/upf:latest
+    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    volumes:
+      - ../config/ulcl/i-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        aliases:
+          - i-upf-2.free5gc.org
+        ipv4_address: 10.100.200.102
+      mec-net:
+        aliases:
+          - i-upf-2.mec.org
+
+  free5gc-psa-upf-0: # psa-upf
+    container_name: psa-upf-0
+    image: free5gc/upf:latest
+    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    volumes:
+      - ../config/ulcl/psa-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        aliases:
+          - psa-upf-0.free5gc.org
       n6-net:
         aliases:
-          - psa-upf.n6.org
+          - psa-upf-0.n6.org
+
+  free5gc-psa-upf-1: # psa-upf
+    container_name: psa-upf-1
+    image: free5gc/upf:latest
+    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    volumes:
+      - ../config/ulcl/psa-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        aliases:
+          - psa-upf-1.free5gc.org
+      n6-net:
+        aliases:
+          - psa-upf-1.n6.org
+
+  free5gc-psa-upf-2: # psa-upf
+    container_name: psa-upf-2
+    image: free5gc/upf:latest
+    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    volumes:
+      - ../config/ulcl/psa-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
+      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        aliases:
+          - psa-upf-2.free5gc.org
+      n6-net:
+        aliases:
+          - psa-upf-2.n6.org
 
   free5gc-n6gw: # n6gw
     container_name: n6gw
@@ -186,8 +256,8 @@ services:
     expose:
       - "8000"
     volumes:
-      - ../config/TI/smfCfg.yaml:/free5gc/config/smfcfg.yaml
-      - ../config/TI/ueRoutingCfg.yaml:/free5gc/config/uerouting.yaml
+      - ../config/ulcl/smfCfg.yaml:/free5gc/config/smfcfg.yaml
+      - ../config/ulcl/ueRoutingCfg.yaml:/free5gc/config/uerouting.yaml
       - ../cert:/free5gc/cert
     environment:
       GIN_MODE: release
@@ -197,8 +267,12 @@ services:
           - smf.free5gc.org
     depends_on:
       - free5gc-nrf
-      - free5gc-i-upf
-      - free5gc-psa-upf
+      - free5gc-i-upf-0
+      - free5gc-i-upf-1
+      - free5gc-i-upf-2
+      - free5gc-psa-upf-0
+      - free5gc-psa-upf-1
+      - free5gc-psa-upf-2
 
   free5gc-udm: # udm
     container_name: udm
@@ -302,17 +376,17 @@ services:
       - db
       - free5gc-nrf
 
-  gnb:
-    container_name: gnb
+  gnb-0:
+    container_name: gnb-0
     image: alonza0314/free-ran-ue:latest
     command: ./free-ran-ue gnb -c ./gnbcfg.yaml
     volumes:
-      - ../config/TI/gnbCfg.yaml:/free-ran-ue/gnbcfg.yaml
+      - ../config/ulcl/gnbCfg-0.yaml:/free-ran-ue/gnbcfg.yaml
     networks:
       privnet:
         ipv4_address: 10.100.200.50
-      ran-ue:
-        ipv4_address: 10.0.2.3
+      ran-ue-0:
+        ipv4_address: 10.0.0.2
     depends_on:
       - free5gc-amf
       - free5gc-ausf
@@ -323,18 +397,18 @@ services:
       - free5gc-smf
       - free5gc-udm
       - free5gc-udr
-      - free5gc-i-upf
-      - free5gc-psa-upf
+      - free5gc-i-upf-0
+      - free5gc-psa-upf-0
 
-  ue:
-    container_name: ue
+  ue-0:
+    container_name: ue-0
     build:
       context: ../dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
     volumes:
-      - ../config/TI/ueCfg.yaml:/free-ran-ue/uecfg.yaml
+      - ../config/ulcl/ueCfg-0.yaml:/free-ran-ue/uecfg.yaml
       - ../test:/root/test
     cap_add:
       - NET_ADMIN
@@ -342,11 +416,103 @@ services:
       - /dev/net/tun:/dev/net/tun
     networks:
       privnet:
+        ipv4_address: 10.100.200.60
+      ran-ue-0:
+        ipv4_address: 10.0.0.3
+    depends_on:
+      - gnb-0
+
+  gnb-1:
+    container_name: gnb-1
+    image: alonza0314/free-ran-ue:latest
+    command: ./free-ran-ue gnb -c ./gnbcfg.yaml
+    volumes:
+      - ../config/ulcl/gnbCfg-1.yaml:/free-ran-ue/gnbcfg.yaml
+    networks:
+      privnet:
         ipv4_address: 10.100.200.51
-      ran-ue:
+      ran-ue-1:
+        ipv4_address: 10.0.1.2
+    depends_on:
+      - free5gc-amf
+      - free5gc-ausf
+      - free5gc-chf
+      - free5gc-nrf
+      - free5gc-nssf
+      - free5gc-pcf
+      - free5gc-smf
+      - free5gc-udm
+      - free5gc-udr
+      - free5gc-i-upf-1
+      - free5gc-psa-upf-1
+
+  ue-1:
+    container_name: ue-1
+    build:
+      context: ../dockerfiles/ci
+      args:
+        DEBUG_TOOLS: "false"
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ../config/ulcl/ueCfg-1.yaml:/free-ran-ue/uecfg.yaml
+      - ../test:/root/test
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      privnet:
+        ipv4_address: 10.100.200.61
+      ran-ue-1:
+        ipv4_address: 10.0.1.3
+    depends_on:
+      - gnb-1
+
+  gnb-2:
+    container_name: gnb-2
+    image: alonza0314/free-ran-ue:latest
+    command: ./free-ran-ue gnb -c ./gnbcfg.yaml
+    volumes:
+      - ../config/ulcl/gnbCfg-2.yaml:/free-ran-ue/gnbcfg.yaml
+    networks:
+      privnet:
+        ipv4_address: 10.100.200.52
+      ran-ue-2:
         ipv4_address: 10.0.2.2
     depends_on:
-      - gnb
+      - free5gc-amf
+      - free5gc-ausf
+      - free5gc-chf
+      - free5gc-nrf
+      - free5gc-nssf
+      - free5gc-pcf
+      - free5gc-smf
+      - free5gc-udm
+      - free5gc-udr
+      - free5gc-i-upf-2
+      - free5gc-psa-upf-2
+
+  ue-2:
+    container_name: ue-2
+    build:
+      context: ../dockerfiles/ci
+      args:
+        DEBUG_TOOLS: "false"
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ../config/ulcl/ueCfg-2.yaml:/free-ran-ue/uecfg.yaml
+      - ../test:/root/test
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      privnet:
+        ipv4_address: 10.100.200.62
+      ran-ue-2:
+        ipv4_address: 10.0.2.3
+    depends_on:
+      - gnb-2
 
 networks:
   privnet:
@@ -373,13 +539,29 @@ networks:
     driver_opts:
       com.docker.network.bridge.name: br-n6
 
-  ran-ue:
+  ran-ue-0:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-ran-ue-0
+
+  ran-ue-1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.1.0/24
+    driver_opts:
+      com.docker.network.bridge.name: br-ran-ue-1
+
+  ran-ue-2:
     ipam:
       driver: default
       config:
         - subnet: 10.0.2.0/24
     driver_opts:
-      com.docker.network.bridge.name: br-ran-ue
+      com.docker.network.bridge.name: br-ran-ue-2
 
 volumes:
   dbdata:

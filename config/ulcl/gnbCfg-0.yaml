@@ -1,11 +1,11 @@
 gnb:
   amfN2Ip: "10.100.200.18" # AMF N2 IP at core network
-  ranN2Ip: "10.100.200.100" # RAN N2 IP for connecting to AMF
-  upfN3Ip: "10.100.200.101" # UPF N3 IP at core network
-  ranN3Ip: "10.100.200.100" # RAN N3 IP for connecting to UPF
+  ranN2Ip: "10.100.200.50" # RAN N2 IP for connecting to AMF
+  upfN3Ip: "10.100.200.100" # UPF N3 IP at core network
+  ranN3Ip: "10.100.200.50" # RAN N3 IP for connecting to UPF
 
-  ranControlPlaneIp: "10.0.3.3" # RAN Control Plane IP open for UE connection
-  ranDataPlaneIp: "10.0.3.3" # RAN Data Plane IP open for UE connection
+  ranControlPlaneIp: "10.0.0.2" # RAN Control Plane IP open for UE connection
+  ranDataPlaneIp: "10.0.0.2" # RAN Data Plane IP open for UE connection
 
   amfN2Port: 38412 # AMF N2 SCTP port at core network
   ranN2Port: 38412 # RAN N2 SCTP port for connecting to AMF
@@ -15,8 +15,8 @@ gnb:
   ranControlPlanePort: 31413 # RAN Control Plane port open for UE connection
   ranDataPlanePort: 31414 # RAN Data Plane port open for UE connection
 
-  gnbId: "000008" # gNB ID
-  gnbName: "gNB-1" # gNB name
+  gnbId: "000001" # gNB ID
+  gnbName: "gNB-0" # gNB name
 
   plmnId:
     mcc: "208" # Mobile Country Code
@@ -30,10 +30,10 @@ gnb:
 
   snssai:
     sst: "1" # Slice/Service Type
-    sd: "010203" # Slice Differentiator
+    sd: "" # Slice Differentiator
 
   api:
-    ip: "10.100.200.100" # API for console usage
+    ip: "10.100.200.50" # API for console usage
     port: 40104 # API port for console usage
 
 logger:

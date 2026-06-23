@@ -28,8 +28,7 @@ usage() {
 COMPOSE_DIR="composes/build"
 
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
-E2E_TI_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl-ti.yaml"
-E2E_MP_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl-mp.yaml"
+E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
@@ -62,11 +61,8 @@ main() {
                 "basic")
                     docker compose -f $E2E_BASIC_COMPOSE_FILE up --build
                 ;;
-                "ulcl-ti")
-                    docker compose -f $E2E_TI_COMPOSE_FILE up --build
-                ;;
-                "ulcl-mp")
-                    docker compose -f $E2E_MP_COMPOSE_FILE up --build
+                "ulcl")
+                    docker compose -f $E2E_ULCL_COMPOSE_FILE up --build
                 ;;
                 *)
                     usage
@@ -77,11 +73,8 @@ main() {
                 "basic")
                     docker compose -f $E2E_BASIC_COMPOSE_FILE down
                 ;;
-                "ulcl-ti")
-                    docker compose -f $E2E_TI_COMPOSE_FILE down
-                ;;
-                "ulcl-mp")
-                    docker compose -f $E2E_MP_COMPOSE_FILE down
+                "ulcl")
+                    docker compose -f $E2E_ULCL_COMPOSE_FILE down
                 ;;
                 *)
                     usage
@@ -92,10 +85,8 @@ main() {
                 "basic")
                     docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-reg-pdu-charging.sh"
                 ;;
-                "ulcl-ti")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-ulcl-ti.sh TestULCLTrafficInfluence"
-                ;;
-                "ulcl-mp")
+                "ulcl")
+                    docker exec ue-0 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-ti.sh TestULCLTrafficInfluence"
                     docker exec ue-1 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe1"
                     docker exec ue-2 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe2"
                 ;;
@@ -105,8 +96,8 @@ main() {
         ;;
         "exec")
             case "$2" in
-                "ue")
-                    docker exec -it ue bash
+                "ue-0")
+                    docker exec -it ue-0 bash
                 ;;
                 "ue-1")
                     docker exec -it ue-1 bash

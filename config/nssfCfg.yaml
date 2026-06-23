@@ -26,6 +26,8 @@ configuration:
         mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
       supportedSnssaiList: # Supported S-NSSAIs of the PLMN
         - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+          sd: # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+        - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
           sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
         - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
           sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -80,18 +82,25 @@ configuration:
           nsiId: 21
     - snssai: # S-NSSAI of this NSI
         sst: 1 # Slice/Service Type (uinteger, range: 0~255)
-        sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+        sd: # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
       nsiInformationList: # Information list of this NSI
         # the NRF to be used to select the NFs/services within the selected NSI, and an optonal ID
         - nrfId: http://nrf.free5gc.org:8000/nnrf-nfm/v1/nf-instances
           nsiId: 22
     - snssai: # S-NSSAI of this NSI
         sst: 1 # Slice/Service Type (uinteger, range: 0~255)
-        sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+        sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
       nsiInformationList: # Information list of this NSI
         # the NRF to be used to select the NFs/services within the selected NSI, and an optonal ID
         - nrfId: http://nrf.free5gc.org:8000/nnrf-nfm/v1/nf-instances
           nsiId: 23
+    - snssai: # S-NSSAI of this NSI
+        sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+        sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+      nsiInformationList: # Information list of this NSI
+        # the NRF to be used to select the NFs/services within the selected NSI, and an optonal ID
+        - nrfId: http://nrf.free5gc.org:8000/nnrf-nfm/v1/nf-instances
+          nsiId: 24
   amfSetList: # List of AMF Sets that my be assigned by this NSSF
     - amfSetId: 1 # the AMF Set identifier
       amfList: # Instance ID of the AMFs in this set

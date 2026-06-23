@@ -5,11 +5,11 @@
 # usage:
 # ./ci-test-ulcl-mp.sh <test-name>
 #
-# e.g. ./ci-test-ulcl-mp.sh <TestULCLMultiPathUe1 | TestULCLMultiPathUe2>
+# e.g. ./ci-test-ulcl-mp.sh <TestULCLTrafficInfluence | TestULCLMultiPathUe1 | TestULCLMultiPathUe2>
 #
 ##########################
 
-TEST_POOL="TestULCLMultiPathUe1|TestULCLMultiPathUe2"
+TEST_POOL="TestULCLTrafficInfluence|TestULCLMultiPathUe1|TestULCLMultiPathUe2"
 
 # check if the test name is in the allowed test pool
 if [[ ! "$1" =~ ^($TEST_POOL)$ ]]; then
@@ -22,6 +22,10 @@ fi
 echo "Running test... $1"
 
 case "$1" in
+    "TestULCLTrafficInfluence")
+        docker exec ue /bin/bash -c "cd test && ./test-e2e-ulcl-ti.sh $1"
+        exit_code=$?
+    ;;
     "TestULCLMultiPathUe1")
         docker exec ue-1 /bin/bash -c "cd test && ./test-e2e-ulcl-mp.sh $1"
         exit_code=$?
