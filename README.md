@@ -10,9 +10,13 @@ E2E test will launch a simulate UE via [free-ran-ue](https://github.com/free-ran
 
 ### Basic
 
+![basic-topo](./doc/images/basic-topo.png)
+
 - [RegPduCharging](./doc/RegPduCharging.md)
 
 ### ULCL
+
+![ulcl-topo](./doc/images/ulcl-topo.png)
 
 - [Traffic Influence](./doc/ulcl-traffic-influence.md)
 - [Multi-path](./doc/ulcl-multi-path.md)
