@@ -44,4 +44,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# exit $go_test_exit_code
+exit $go_test_exit_code

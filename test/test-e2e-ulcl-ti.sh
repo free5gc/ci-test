@@ -3,9 +3,9 @@
 ##########################
 #
 # usage:
-# ./test-ulcl-ti.sh <test-name>
+# ./test-ulcl-ti.sh
 #
-# e.g. ./test-ulcl-ti.sh TestULCLTrafficInfluence
+# e.g. ./test-ulcl-ti.sh
 #
 ##########################
 
@@ -20,7 +20,7 @@ fi
 
 # run test
 cd goTest
-go test -v -vet=off -run $1
+go test -v -vet=off -run TestULCLTrafficInfluence
 go_test_exit_code=$?
 cd ..
 
@@ -42,7 +42,7 @@ fi
 
 # run test
 cd goTest
-go test -v -vet=off -run $1
+go test -v -vet=off -run TestULCLTrafficInfluence
 go_test_exit_code=$?
 cd ..
 

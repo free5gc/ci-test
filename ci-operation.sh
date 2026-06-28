@@ -27,6 +27,7 @@ usage() {
 
 COMPOSE_DIR="composes/build"
 
+IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
 E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
@@ -58,6 +59,9 @@ main() {
         ;;
         "up")
             case "$2" in
+                "it")
+                    docker compose -f $IT_COMPOSE_FILE up --build
+                ;;
                 "basic")
                     docker compose -f $E2E_BASIC_COMPOSE_FILE up --build
                 ;;
@@ -70,6 +74,9 @@ main() {
         ;;
         "down")
             case "$2" in
+                "it")
+                    docker compose -f $IT_COMPOSE_FILE down
+                ;;
                 "basic")
                     docker compose -f $E2E_BASIC_COMPOSE_FILE down
                 ;;
@@ -82,13 +89,15 @@ main() {
         ;;
         "test")
             case "$2" in
+                "it")
+                    docker exec it /bin/bash -c "cd /root/test && ./test-it-registration.sh"
+                ;;
                 "basic")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-e2e-reg-pdu-charging.sh"
+                    ./ci-test-e2e-basic.sh --test TestRegPduCharging --build
                 ;;
                 "ulcl")
-                    docker exec ue-0 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-ti.sh TestULCLTrafficInfluence"
-                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe1"
-                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-e2e-ulcl-mp.sh TestULCLMultiPathUe2"
+                    ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence --build
+                    ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe --build
                 ;;
                 *)
                     usage
@@ -96,6 +105,9 @@ main() {
         ;;
         "exec")
             case "$2" in
+                "it")
+                    docker exec -it it bash
+                ;;
                 "ue-0")
                     docker exec -it ue-0 bash
                 ;;
