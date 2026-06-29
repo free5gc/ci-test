@@ -90,7 +90,7 @@ main() {
         "test")
             case "$2" in
                 "it")
-                    docker exec it /bin/bash -c "cd /root/test && ./test-it-registration.sh"
+                    ./ci-test-it.sh --test TestRegistration --build
                 ;;
                 "basic")
                     ./ci-test-e2e-basic.sh --test TestRegPduCharging --build
