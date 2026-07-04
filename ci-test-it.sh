@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -74,6 +74,10 @@ case "$TARGET_TEST" in
     ;;
     "TestEAPAKAPrimeAuthentication")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-eapakaprime.sh"
+        exit_code=$?
+    ;;
+    "TestDuplicateRegistration")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-duplicateregistration.sh"
         exit_code=$?
     ;;
 esac
