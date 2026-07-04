@@ -25,6 +25,8 @@ const (
 	IT_GNB_ID = "\x00\x01\x02"
 
 	UE_IMSI  = "imsi-208930000000001"
+	UE_K     = "8baf473f2f8fd09487cccbd7097c6862"
+	UE_OPC   = "8e27b6af0e692e750f32667a3b14605d"
 	PLMN_ID  = "20983"
 	PLMN_OCT = "\x02\xf8\x39"
 

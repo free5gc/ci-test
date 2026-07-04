@@ -449,3 +449,37 @@ func GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId uint8, reques
 
 	return data.Bytes()
 }
+
+func GetDeregistrationRequest(accessType uint8, switchOff uint8, ngKsi uint8,
+	mobileIdentity5GS nasType.MobileIdentity5GS) []byte {
+
+	m := nas.NewMessage()
+	m.GmmMessage = nas.NewGmmMessage()
+	m.GmmHeader.SetMessageType(nas.MsgTypeDeregistrationRequestUEOriginatingDeregistration)
+
+	deregistrationRequest := nasMessage.NewDeregistrationRequestUEOriginatingDeregistration(0)
+	deregistrationRequest.ExtendedProtocolDiscriminator.SetExtendedProtocolDiscriminator(
+		nasMessage.Epd5GSMobilityManagementMessage)
+	deregistrationRequest.SpareHalfOctetAndSecurityHeaderType.SetSecurityHeaderType(nas.SecurityHeaderTypePlainNas)
+	deregistrationRequest.SpareHalfOctetAndSecurityHeaderType.SetSpareHalfOctet(0)
+	deregistrationRequest.DeregistrationRequestMessageIdentity.SetMessageType(
+		nas.MsgTypeDeregistrationRequestUEOriginatingDeregistration)
+
+	deregistrationRequest.NgksiAndDeregistrationType.SetAccessType(accessType)
+	deregistrationRequest.NgksiAndDeregistrationType.SetSwitchOff(switchOff)
+	deregistrationRequest.NgksiAndDeregistrationType.SetReRegistrationRequired(0)
+	deregistrationRequest.NgksiAndDeregistrationType.SetTSC(ngKsi)
+	deregistrationRequest.NgksiAndDeregistrationType.SetNasKeySetIdentifiler(ngKsi)
+	deregistrationRequest.MobileIdentity5GS.SetLen(mobileIdentity5GS.GetLen())
+	deregistrationRequest.MobileIdentity5GS.SetMobileIdentity5GSContents(mobileIdentity5GS.GetMobileIdentity5GSContents())
+
+	m.GmmMessage.DeregistrationRequestUEOriginatingDeregistration = deregistrationRequest
+
+	data := new(bytes.Buffer)
+	err := m.GmmMessageEncode(data)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return data.Bytes()
+}

@@ -504,3 +504,90 @@ func GetPDUSessionResourceSetupResponse(pduSessionId int64, amfUeNgapID int64, r
 	message := buildPDUSessionResourceSetupResponseForRegistrationTest(pduSessionId, amfUeNgapID, ranUeNgapID, ipv4)
 	return ngap.Encoder(message)
 }
+
+func buildUEContextReleaseComplete(amfUeNgapID, ranUeNgapID int64, pduSessionIDList []int64) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentSuccessfulOutcome
+	pdu.SuccessfulOutcome = new(ngapType.SuccessfulOutcome)
+
+	successfulOutcome := pdu.SuccessfulOutcome
+	successfulOutcome.ProcedureCode.Value = ngapType.ProcedureCodeUEContextRelease
+	successfulOutcome.Criticality.Value = ngapType.CriticalityPresentReject
+
+	successfulOutcome.Value.Present = ngapType.SuccessfulOutcomePresentUEContextReleaseComplete
+	successfulOutcome.Value.UEContextReleaseComplete = new(ngapType.UEContextReleaseComplete)
+
+	uEContextReleaseComplete := successfulOutcome.Value.UEContextReleaseComplete
+	uEContextReleaseCompleteIEs := &uEContextReleaseComplete.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.UEContextReleaseCompleteIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.UEContextReleaseCompleteIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+
+	aMFUENGAPID := ie.Value.AMFUENGAPID
+	aMFUENGAPID.Value = amfUeNgapID
+
+	uEContextReleaseCompleteIEs.List = append(uEContextReleaseCompleteIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.UEContextReleaseCompleteIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.UEContextReleaseCompleteIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+
+	rANUENGAPID := ie.Value.RANUENGAPID
+	rANUENGAPID.Value = ranUeNgapID
+
+	uEContextReleaseCompleteIEs.List = append(uEContextReleaseCompleteIEs.List, ie)
+
+	// User Location Information (optional)
+	ie = ngapType.UEContextReleaseCompleteIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDUserLocationInformation
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.UEContextReleaseCompleteIEsPresentUserLocationInformation
+	ie.Value.UserLocationInformation = new(ngapType.UserLocationInformation)
+
+	userLocationInformation := ie.Value.UserLocationInformation
+	userLocationInformation.Present = ngapType.UserLocationInformationPresentUserLocationInformationNR
+	userLocationInformation.UserLocationInformationNR = new(ngapType.UserLocationInformationNR)
+
+	userLocationInformationNR := userLocationInformation.UserLocationInformationNR
+	userLocationInformationNR.NRCGI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationNR.NRCGI.NRCellIdentity.Value = aper.BitString{
+		Bytes:     []byte{0x00, 0x00, 0x00, 0x00, 0x10},
+		BitLength: 36,
+	}
+
+	userLocationInformationNR.TAI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationNR.TAI.TAC.Value = aper.OctetString("\x00\x00\x01")
+
+	uEContextReleaseCompleteIEs.List = append(uEContextReleaseCompleteIEs.List, ie)
+
+	// PDU Session Resource List
+	if pduSessionIDList != nil {
+		ie = ngapType.UEContextReleaseCompleteIEs{}
+		ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceListCxtRelCpl
+		ie.Criticality.Value = ngapType.CriticalityPresentReject
+		ie.Value.Present = ngapType.UEContextReleaseCompleteIEsPresentPDUSessionResourceListCxtRelCpl
+		ie.Value.PDUSessionResourceListCxtRelCpl = new(ngapType.PDUSessionResourceListCxtRelCpl)
+
+		pDUSessionResourceListCxtRelCpl := ie.Value.PDUSessionResourceListCxtRelCpl
+
+		for _, pduSessionID := range pduSessionIDList {
+			pDUSessionResourceItemCxtRelCpl := ngapType.PDUSessionResourceItemCxtRelCpl{}
+			pDUSessionResourceItemCxtRelCpl.PDUSessionID.Value = pduSessionID
+			pDUSessionResourceListCxtRelCpl.List = append(pDUSessionResourceListCxtRelCpl.List, pDUSessionResourceItemCxtRelCpl)
+		}
+
+		uEContextReleaseCompleteIEs.List = append(uEContextReleaseCompleteIEs.List, ie)
+	}
+
+	return pdu
+}
+
+func GetUEContextReleaseComplete(amfUeNgapID, ranUeNgapID int64, pduSessionIDList []int64) ([]byte, error) {
+	return ngap.Encoder(buildUEContextReleaseComplete(amfUeNgapID, ranUeNgapID, pduSessionIDList))
+}

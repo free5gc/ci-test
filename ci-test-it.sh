@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration"
+TEST_POOL="TestRegistration|TestDeregistration"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -62,6 +62,10 @@ echo "Running test... $TARGET_TEST"
 case "$TARGET_TEST" in
     "TestRegistration")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-registration.sh"
+        exit_code=$?
+    ;;
+    "TestDeregistration")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-deregistration.sh"
         exit_code=$?
     ;;
 esac
