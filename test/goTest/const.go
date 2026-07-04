@@ -27,6 +27,7 @@ const (
 	UE_IMSI  = "imsi-208930000000001"
 	UE_K     = "8baf473f2f8fd09487cccbd7097c6862"
 	UE_OPC   = "8e27b6af0e692e750f32667a3b14605d"
+	UE_SQN   = "000000000023"
 	PLMN_ID  = "20983"
 	PLMN_OCT = "\x02\xf8\x39"
 

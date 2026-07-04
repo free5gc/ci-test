@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"test/consumerTestdata/UDM/TestGenAuthData"
 	"test/consumerTestdata/UDR/TestRegistrationProcedure"
 
 	"github.com/calee0219/fatal"
@@ -62,20 +61,19 @@ func GetAuthSubscription(k, opc, op string) models.AuthenticationSubscription {
 	authSubs.AuthenticationManagementField = "8000"
 
 	authSubs.SequenceNumber = &models.SequenceNumber{
-		Sqn: "000000000023",
+		Sqn: UE_SQN,
 	}
 	authSubs.AuthenticationMethod = models.AuthMethod__5_G_AKA
 	return authSubs
 }
 
-func GetEAPAKAPrimeAuthSubscription(k, opc, op string) models.AuthenticationSubscription {
+func GetEAPAKAPrimeAuthSubscription(k, opc string) models.AuthenticationSubscription {
 	var authSubs models.AuthenticationSubscription
 	authSubs.EncPermanentKey = k
 	authSubs.EncOpcKey = opc
 	authSubs.AuthenticationManagementField = "8000"
-
 	authSubs.SequenceNumber = &models.SequenceNumber{
-		Sqn: TestGenAuthData.MilenageTestSet19.SQN,
+		Sqn: UE_SQN,
 	}
 	authSubs.AuthenticationMethod = models.AuthMethod_EAP_AKA_PRIME
 	return authSubs

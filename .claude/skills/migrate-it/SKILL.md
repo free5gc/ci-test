@@ -131,7 +131,7 @@ Source 使用 `nasTestpacket.GetXxx(...)`，IT 使用同名函式（在 `test/go
 ```go
 ue.AuthenticationSubs = GetAuthSubscription(UE_K, UE_OPC, "")
 ```
-K 和 OPC 定義在 `const.go` 的 `UE_K` / `UE_OPC`，**不可在 test 中直接硬寫字串**。SQN 已在 `ranUeContext.go` 的 `GetAuthSubscription` 中硬寫為 `"000000000023"`，與 webconsole JSON 一致。**不要修改 GetAuthSubscription 的函式簽名。**
+K、OPC、SQN 均定義在 `const.go`（`UE_K`、`UE_OPC`、`UE_SQN`），**不可在 test 或 ranUeContext.go 中直接硬寫字串**。`ranUeContext.go` 的 auth subscription 函式使用 `UE_SQN`，與 webconsole JSON 的 `sequenceNumber` 一致。**不要修改 GetAuthSubscription 的函式簽名。**
 
 **SUCI buffer 計算（for `imsi-208930000000001`）：**
 ```go
@@ -199,6 +199,28 @@ exit $go_test_exit_code
 ---
 
 ## 已知特殊模式（續）
+
+### EAP-AKA' 認證（`TestEAPAKAPrimeAuthentication`）
+
+EAP-AKA' 與 5G-AKA 的差異：
+
+| 項目 | 5G-AKA | EAP-AKA' |
+|---|---|---|
+| Auth subscription 函式 | `GetAuthSubscription(UE_K, UE_OPC, "")` | `GetEAPAKAPrimeAuthSubscriptionIT(UE_K, UE_OPC)` |
+| Authentication Response | `GetAuthenticationResponse(resStat, "")` | `GetAuthenticationResponse(nil, base64.StdEncoding.EncodeToString(resEAPMessage))` |
+| 計算 response | `ue.DeriveRESstarAndSetKey(...)` | `ue.DeriveResEAPMessageAndSetKey(...)` |
+| EAP message 取得 | — | `nasPdu.AuthenticationRequest.GetEAPMessage()` |
+| webconsole JSON | `authenticationMethod: "5G_AKA"` | `authenticationMethod: "EAP_AKA_PRIME"` |
+
+**`GetEAPAKAPrimeAuthSubscriptionIT`**（在 `ranUeContext.go`）是專為 IT 建立的版本，使用 IT SQN `"000000000023"`，與原本 `GetEAPAKAPrimeAuthSubscription` 硬寫 `TestGenAuthData.MilenageTestSet19.SQN` 不同。
+
+**不同 IMSI / auth method 的 test** 需建立對應的 webconsole JSON（例如 `webconsole-subscription-data-it-eapakaprime.json`），shell script 對應使用該 JSON。
+
+**不包含 PDU session 流程的 test** 在 Registration Complete + UE Configuration Update Command 後直接結束（`time.Sleep(100ms)` + return），不需要 UPF 連線。
+
+**需要 import `"encoding/base64"`** 才能使用 `base64.StdEncoding.EncodeToString`。
+
+---
 
 ### SQN 遞增（多 round authentication）
 
