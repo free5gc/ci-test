@@ -483,3 +483,27 @@ func GetDeregistrationRequest(accessType uint8, switchOff uint8, ngKsi uint8,
 
 	return data.Bytes()
 }
+
+func GetIdentityResponse(mobileIdentity nasType.MobileIdentity) []byte {
+	m := nas.NewMessage()
+	m.GmmMessage = nas.NewGmmMessage()
+	m.GmmHeader.SetMessageType(nas.MsgTypeIdentityResponse)
+
+	identityResponse := nasMessage.NewIdentityResponse(0)
+	identityResponse.ExtendedProtocolDiscriminator.SetExtendedProtocolDiscriminator(
+		nasMessage.Epd5GSMobilityManagementMessage)
+	identityResponse.IdentityResponseMessageIdentity.SetMessageType(nas.MsgTypeIdentityResponse)
+	identityResponse.SpareHalfOctetAndSecurityHeaderType.SetSecurityHeaderType(nas.SecurityHeaderTypePlainNas)
+	identityResponse.SpareHalfOctetAndSecurityHeaderType.SetSpareHalfOctet(0)
+	identityResponse.MobileIdentity = mobileIdentity
+
+	m.GmmMessage.IdentityResponse = identityResponse
+
+	data := new(bytes.Buffer)
+	err := m.GmmMessageEncode(data)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return data.Bytes()
+}

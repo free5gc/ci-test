@@ -198,6 +198,26 @@ exit $go_test_exit_code
 
 ---
 
+## 已知特殊模式（續）
+
+### SQN 遞增（多 round authentication）
+
+Test 中若需在第二次 Authentication 前遞增 SQN（例如 `TestGUTIRegistration`），必須使用 `fmt.Sprintf("%012x", sqn)` 格式化，**不可用 `strconv.FormatUint`**，否則遺失 leading zero 導致 SQN 長度不足 6 bytes：
+
+```go
+// 正確
+sqn, _ := strconv.ParseUint(ue.AuthenticationSubs.SequenceNumber.Sqn, 16, 48)
+sqn++
+ue.AuthenticationSubs.SequenceNumber.Sqn = fmt.Sprintf("%012x", sqn)
+
+// 錯誤 — FormatUint 不補零，"000000000023"+1 → "24"（1 byte），網路端報錯
+ue.AuthenticationSubs.SequenceNumber.Sqn = strconv.FormatUint(sqn, 16)
+```
+
+需同時 import `"fmt"` 和 `"strconv"`。
+
+---
+
 ## 常見錯誤
 
 | 錯誤 | 原因 | 修正 |

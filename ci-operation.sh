@@ -91,7 +91,8 @@ main() {
             case "$2" in
                 "it")
                     # ./ci-test-it.sh --test TestRegistration --build
-                    ./ci-test-it.sh --test TestDeregistration --build
+                    # ./ci-test-it.sh --test TestDeregistration --build
+                    ./ci-test-it.sh --test TestGUTIRegistration --build
                 ;;
                 "basic")
                     ./ci-test-e2e-basic.sh --test TestRegPduCharging --build
