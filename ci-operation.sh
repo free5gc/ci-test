@@ -94,7 +94,8 @@ main() {
                     # ./ci-test-it.sh --test TestDeregistration --build
                     # ./ci-test-it.sh --test TestGUTIRegistration --build
                     # ./ci-test-it.sh --test TestEAPAKAPrimeAuthentication --build
-                    ./ci-test-it.sh --test TestDuplicateRegistration --build
+                    # ./ci-test-it.sh --test TestDuplicateRegistration --build
+                    ./ci-test-it.sh --test TestServiceRequest --build
                 ;;
                 "basic")
                     ./ci-test-e2e-basic.sh --test TestRegPduCharging --build

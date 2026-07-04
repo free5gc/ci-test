@@ -652,3 +652,118 @@ func buildPDUSessionResourceReleaseResponse(amfUeNgapID, ranUeNgapID int64) (pdu
 func GetPDUSessionResourceReleaseResponse(amfUeNgapID, ranUeNgapID int64) ([]byte, error) {
 	return ngap.Encoder(buildPDUSessionResourceReleaseResponse(amfUeNgapID, ranUeNgapID))
 }
+
+func buildUEContextReleaseRequest(amfUeNgapID, ranUeNgapID int64, pduSessionIDList []int64) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentInitiatingMessage
+	pdu.InitiatingMessage = new(ngapType.InitiatingMessage)
+
+	initiatingMessage := pdu.InitiatingMessage
+	initiatingMessage.ProcedureCode.Value = ngapType.ProcedureCodeUEContextReleaseRequest
+	initiatingMessage.Criticality.Value = ngapType.CriticalityPresentIgnore
+	initiatingMessage.Value.Present = ngapType.InitiatingMessagePresentUEContextReleaseRequest
+	initiatingMessage.Value.UEContextReleaseRequest = new(ngapType.UEContextReleaseRequest)
+
+	uEContextReleaseRequest := initiatingMessage.Value.UEContextReleaseRequest
+	uEContextReleaseRequestIEs := &uEContextReleaseRequest.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.UEContextReleaseRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.UEContextReleaseRequestIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+	ie.Value.AMFUENGAPID.Value = amfUeNgapID
+	uEContextReleaseRequestIEs.List = append(uEContextReleaseRequestIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.UEContextReleaseRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.UEContextReleaseRequestIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+	ie.Value.RANUENGAPID.Value = ranUeNgapID
+	uEContextReleaseRequestIEs.List = append(uEContextReleaseRequestIEs.List, ie)
+
+	// PDU Session Resource List
+	if pduSessionIDList != nil {
+		ie = ngapType.UEContextReleaseRequestIEs{}
+		ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceListCxtRelReq
+		ie.Criticality.Value = ngapType.CriticalityPresentReject
+		ie.Value.Present = ngapType.UEContextReleaseRequestIEsPresentPDUSessionResourceListCxtRelReq
+		ie.Value.PDUSessionResourceListCxtRelReq = new(ngapType.PDUSessionResourceListCxtRelReq)
+		for _, pduSessionID := range pduSessionIDList {
+			item := ngapType.PDUSessionResourceItemCxtRelReq{}
+			item.PDUSessionID.Value = pduSessionID
+			ie.Value.PDUSessionResourceListCxtRelReq.List = append(ie.Value.PDUSessionResourceListCxtRelReq.List, item)
+		}
+		uEContextReleaseRequestIEs.List = append(uEContextReleaseRequestIEs.List, ie)
+	}
+
+	// Cause
+	ie = ngapType.UEContextReleaseRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDCause
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.UEContextReleaseRequestIEsPresentCause
+	ie.Value.Cause = new(ngapType.Cause)
+	ie.Value.Cause.Present = ngapType.CausePresentRadioNetwork
+	ie.Value.Cause.RadioNetwork = new(ngapType.CauseRadioNetwork)
+	ie.Value.Cause.RadioNetwork.Value = ngapType.CauseRadioNetworkPresentTxnrelocoverallExpiry
+	uEContextReleaseRequestIEs.List = append(uEContextReleaseRequestIEs.List, ie)
+
+	return pdu
+}
+
+func GetUEContextReleaseRequest(amfUeNgapID, ranUeNgapID int64, pduSessionIDList []int64) ([]byte, error) {
+	return ngap.Encoder(buildUEContextReleaseRequest(amfUeNgapID, ranUeNgapID, pduSessionIDList))
+}
+
+func buildInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID int64, ipv4 string) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentSuccessfulOutcome
+	pdu.SuccessfulOutcome = new(ngapType.SuccessfulOutcome)
+
+	successfulOutcome := pdu.SuccessfulOutcome
+	successfulOutcome.ProcedureCode.Value = ngapType.ProcedureCodeInitialContextSetup
+	successfulOutcome.Criticality.Value = ngapType.CriticalityPresentReject
+	successfulOutcome.Value.Present = ngapType.SuccessfulOutcomePresentInitialContextSetupResponse
+	successfulOutcome.Value.InitialContextSetupResponse = new(ngapType.InitialContextSetupResponse)
+
+	initialContextSetupResponse := successfulOutcome.Value.InitialContextSetupResponse
+	initialContextSetupResponseIEs := &initialContextSetupResponse.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.InitialContextSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.InitialContextSetupResponseIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+	ie.Value.AMFUENGAPID.Value = amfUeNgapID
+	initialContextSetupResponseIEs.List = append(initialContextSetupResponseIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.InitialContextSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.InitialContextSetupResponseIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+	ie.Value.RANUENGAPID.Value = ranUeNgapID
+	initialContextSetupResponseIEs.List = append(initialContextSetupResponseIEs.List, ie)
+
+	// PDU Session Resource Setup Response List
+	ie = ngapType.InitialContextSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceSetupListCxtRes
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.InitialContextSetupResponseIEsPresentPDUSessionResourceSetupListCxtRes
+	ie.Value.PDUSessionResourceSetupListCxtRes = new(ngapType.PDUSessionResourceSetupListCxtRes)
+
+	item := ngapType.PDUSessionResourceSetupItemCxtRes{}
+	item.PDUSessionID.Value = 10
+	item.PDUSessionResourceSetupResponseTransfer = GetPDUSessionResourceSetupResponseTransfer(ipv4)
+	ie.Value.PDUSessionResourceSetupListCxtRes.List = append(ie.Value.PDUSessionResourceSetupListCxtRes.List, item)
+	initialContextSetupResponseIEs.List = append(initialContextSetupResponseIEs.List, ie)
+
+	return pdu
+}
+
+func GetInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID int64, ipv4 string) ([]byte, error) {
+	return ngap.Encoder(buildInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID, ipv4))
+}
