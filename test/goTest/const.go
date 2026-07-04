@@ -13,6 +13,7 @@ const (
 	NGAP_PPID uint32 = 0x3c000000
 
 	AMF_IP   = "10.100.200.18"
+	AMF_2_IP = "10.100.200.180"
 	AMF_PORT = 38412
 
 	UPF_IP   = "10.100.200.8"

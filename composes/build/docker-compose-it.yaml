@@ -74,6 +74,28 @@ services:
     depends_on:
       - free5gc-nrf
 
+  free5gc-amf2: # amf
+    container_name: amf2
+    build:
+      context: ../../dockerfiles/nf_amf
+      args:
+        DEBUG_TOOLS: "false"
+    command: ./amf -c ./config/amfcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ../../config/amf2Cfg.yaml:/free5gc/config/amfcfg.yaml
+      - ../../cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      privnet:
+        aliases:
+          - amf2.free5gc.org
+        ipv4_address: 10.100.200.180
+    depends_on:
+      - free5gc-nrf
+
   free5gc-ausf: # ausf
     container_name: ausf
     build:

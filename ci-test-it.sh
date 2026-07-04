@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -86,6 +86,10 @@ case "$TARGET_TEST" in
     ;;
     "TestPDUSessionReleaseRequest")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-pdusessionreleaserequest.sh"
+        exit_code=$?
+    ;;
+    "TestNasReroute")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-nasreroute.sh"
         exit_code=$?
     ;;
 esac

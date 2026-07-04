@@ -3,14 +3,14 @@ info:
   description: AMF initial local configuration
 
 configuration:
-  amfName: AMF # the name of this AMF
+  amfName: AMF2 # the name of this AMF
   ngapIpList:  # the IP list of N2 interfaces on this AMF
-    - amf.free5gc.org
+    - amf2.free5gc.org
   ngapPort: 38412 # the SCTP port listened by NGAP
   sbi: # Service-based interface information
     scheme: http # the protocol for sbi (http or https)
-    registerIPv4: amf.free5gc.org # IP used to register to NRF
-    bindingIPv4: amf.free5gc.org  # IP used to bind the service
+    registerIPv4: amf2.free5gc.org # IP used to register to NRF
+    bindingIPv4: amf2.free5gc.org  # IP used to bind the service
     port: 8000 # port used to bind the service
     tls: # the local path of TLS key
       pem: cert/amf.pem # AMF TLS Certificate
@@ -27,7 +27,7 @@ configuration:
     - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
         mcc: 208 # Mobile Country Code (3 digits string, digit: 0~9)
         mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
-      amfId: cafe00 # AMF identifier (3 bytes hex string, range: 000000~FFFFFF)
+      amfId: cafe01 # AMF identifier (3 bytes hex string, range: 000000~FFFFFF)
   supportTaiList:  # the TAI (Tracking Area Identifier) list supported by this AMF
     - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
         mcc: 208 # Mobile Country Code (3 digits string, digit: 0~9)
@@ -38,10 +38,6 @@ configuration:
         mcc: 208 # Mobile Country Code (3 digits string, digit: 0~9)
         mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
       snssaiList: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
-        - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
-          sd: # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
-        - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
-          sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
         - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
           sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
   supportDnnList:  # the DNN (Data Network Name) list supported by this AMF
