@@ -1,0 +1,52 @@
+==========================================
+free5GC PR Test Report
+==========================================
+Date: Tue Jul 14 05:05:13 PM CST 2026
+Type: lib
+Library: openapi, PR: #79
+
+[STEP 1] Pull: SUCCESS
+[STEP 2] Update Library openapi PR #79:
+  Author: DBGR18
+  Commit: c38a2e1f0cd0
+  Replace: github.com/free5gc/openapi => github.com/DBGR18/openapi@c38a2e1f0cd0c15729dba16a3a3ee40fea084828
+  Updated NFs: amf ausf bsf chf n3iwf nef nrf nssf pcf smf tngf udm udr
+[STEP 3] Build: SUCCESS
+
+[STEP 4] Unit Tests:
+  TestRegistration: PASS
+  TestGUTIRegistration: PASS
+  TestServiceRequest: PASS
+  TestXnHandover: PASS
+  TestN2Handover: PASS
+  TestDeregistration: PASS
+  TestPDUSessionReleaseRequest: PASS
+  TestPaging: PASS
+  TestReSynchronization: PASS
+  TestDuplicateRegistration: PASS
+  TestEAPAKAPrimeAuthentication: PASS
+  TestMultiAmfRegistration: PASS
+  TestNasReroute: FAIL
+  TestDC: PASS
+  TestDynamicDC: PASS
+  TestXnDCHandover: PASS
+  TestNon3GPP: PASS
+  TestOAuth2Callback: PASS
+  TestTngf: PASS
+
+  Summary:
+    Passed: TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestDC TestDynamicDC TestXnDCHandover TestNon3GPP TestOAuth2Callback TestTngf
+    Failed: TestNasReroute
+[STEP 5] Docker Build: SUCCESS
+
+[STEP 6] Docker Compose Tests:
+  basic: PASS
+  ulcl-ti: PASS
+  ulcl-mp: PASS
+
+  Summary:
+    Passed: basic ulcl-ti ulcl-mp
+
+==========================================
+Test Complete: Tue Jul 14 05:21:04 PM CST 2026
+==========================================

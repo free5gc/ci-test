@@ -1,0 +1,10 @@
+==========================================
+free5GC PR Test Report
+==========================================
+Date: Fri Jun 26 02:08:29 PM CST 2026
+Type: nf
+NF/PR Configuration:
+  - webconsole: PRs 209
+
+[STEP 1] Pull: SKIPPED
+[STEP 2] Fetch/Merge PRs:

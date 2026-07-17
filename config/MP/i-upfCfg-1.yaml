@@ -22,6 +22,7 @@ gtpu:
 dnnList:
   - dnn: internet # Data Network Name
     cidr: 10.60.0.0/16 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
+    ipForwardEnable: true # Add FORWARD rules for this DNN
   # - dnn: internet # Data Network Name
   #   cidr: 10.61.0.0/16 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
 

@@ -1,0 +1,49 @@
+==========================================
+free5GC PR Test Report
+==========================================
+Date: Mon Jun 22 02:10:24 PM CST 2026
+Type: nf
+NF/PR Configuration:
+  - upf: PRs 97
+
+[STEP 1] Pull: SUCCESS
+[STEP 2] Fetch/Merge PRs:
+  - upf #97: MERGED
+[STEP 3] Build: SUCCESS
+
+[STEP 4] Unit Tests:
+  TestRegistration: PASS
+  TestGUTIRegistration: PASS
+  TestServiceRequest: PASS
+  TestXnHandover: PASS
+  TestN2Handover: PASS
+  TestDeregistration: PASS
+  TestPDUSessionReleaseRequest: PASS
+  TestPaging: PASS
+  TestReSynchronization: PASS
+  TestDuplicateRegistration: PASS
+  TestEAPAKAPrimeAuthentication: PASS
+  TestMultiAmfRegistration: PASS
+  TestNasReroute: PASS
+  TestDC: PASS
+  TestDynamicDC: PASS
+  TestXnDCHandover: PASS
+  TestNon3GPP: PASS
+  TestOAuth2Callback: PASS
+  TestTngf: PASS
+
+  Summary:
+    Passed: TestRegistration TestGUTIRegistration TestServiceRequest TestXnHandover TestN2Handover TestDeregistration TestPDUSessionReleaseRequest TestPaging TestReSynchronization TestDuplicateRegistration TestEAPAKAPrimeAuthentication TestMultiAmfRegistration TestNasReroute TestDC TestDynamicDC TestXnDCHandover TestNon3GPP TestOAuth2Callback TestTngf
+[STEP 5] Docker Build: SUCCESS
+
+[STEP 6] Docker Compose Tests:
+  basic: PASS
+  ulcl-ti: PASS
+  ulcl-mp: PASS
+
+  Summary:
+    Passed: basic ulcl-ti ulcl-mp
+
+==========================================
+Test Complete: Mon Jun 22 02:23:14 PM CST 2026
+==========================================
