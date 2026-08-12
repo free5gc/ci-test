@@ -273,6 +273,30 @@ services:
       - db
       - free5gc-nrf
 
+  free5gc-n3iwf: # n3iwf
+    container_name: n3iwf
+    build:
+      context: ../../dockerfiles/nf_n3iwf
+      args:
+        DEBUG_TOOLS: "false"
+    command: ./n3iwf -c ./config/n3iwfcfg.yaml
+    volumes:
+      - ../../config/n3iwfCfg.yaml:/free5gc/config/n3iwfcfg.yaml
+      - ../../config/ipsec/n3iwf-ipsec.sh:/free5gc/n3iwf-ipsec.sh
+    environment:
+      GIN_MODE: release
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        ipv4_address: 10.100.200.15
+        aliases:
+          - n3iwf.free5gc.org
+    depends_on:
+      - free5gc-amf
+      - free5gc-smf
+      - free5gc-upf
+
   free5gc-webui: # webui
     container_name: webui
     build:

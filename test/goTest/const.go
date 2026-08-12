@@ -43,4 +43,9 @@ const (
 
 	SD_2     = "112233"
 	SD_2_OCT = "\x11\x22\x33"
+
+	N3IWF_IP            = "10.100.200.15"
+	N3IWF_IKE_PORT      = 500
+	N3IWF_NAS_TCP_PORT  = 20000
+	IT_IPSEC_IFACE_NAME = "eth0"
 )

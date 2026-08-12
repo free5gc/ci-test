@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -126,6 +126,10 @@ case "$TARGET_TEST" in
     ;;
     "TestRequestTwoPDUSessions")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-requesttwopdusessions.sh"
+        exit_code=$?
+    ;;
+    "TestN3iwf")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-n3iwf.sh"
         exit_code=$?
     ;;
 esac

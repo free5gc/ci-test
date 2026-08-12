@@ -3,8 +3,10 @@ package test
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"reflect"
 
 	"github.com/free5gc/nas"
@@ -706,4 +708,152 @@ func GetAuthenticationFailure(cause5GMM uint8, authenticationFailureParam []uint
 	}
 
 	return data.Bytes()
+}
+
+// encapNasMsgToEnvelope wraps a NAS message in a NAS message envelope (Length | NAS
+// Message) as defined in TS 24.502 9.4, used to transport NAS over the non-3GPP access
+// between the UE and N3IWF (TS 24.502 8.2.4).
+func encapNasMsgToEnvelope(nasPDU []byte) []byte {
+	nasEnv := make([]byte, 2)
+	binary.BigEndian.PutUint16(nasEnv, uint16(len(nasPDU)))
+	nasEnv = append(nasEnv, nasPDU...)
+	return nasEnv
+}
+
+// DecapNasPduFromEnvelope strips the NAS message envelope (TS 24.502 9.4) and returns
+// the inner NAS message.
+func DecapNasPduFromEnvelope(envelop []byte) ([]byte, int, error) {
+	if uint16(len(envelop)) < 2 {
+		return envelop, 0, fmt.Errorf("NAS message envelope is less than 2 bytes")
+	}
+	nasLen := binary.BigEndian.Uint16(envelop[:2])
+	if uint16(len(envelop)) < 2+nasLen {
+		return envelop, 0, fmt.Errorf("NAS message envelope is less than the sum of 2 and naslen")
+	}
+	nasMsg := make([]byte, nasLen)
+	copy(nasMsg, envelop[2:2+nasLen])
+
+	return nasMsg, int(nasLen), nil
+}
+
+// NASEnvelopeEncode is like NASEncode but additionally wraps the result in a NAS
+// message envelope, for NAS messages sent over the N3IWF NAS TCP connection (non-3GPP
+// access) rather than over NGAP.
+func NASEnvelopeEncode(ue *RanUeContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (
+	payload []byte, err error,
+) {
+	var sequenceNumber uint8
+	if ue == nil {
+		err = fmt.Errorf("amfUe is nil")
+		return
+	}
+	if msg == nil {
+		err = fmt.Errorf("Nas Message is empty")
+		return
+	}
+
+	if !securityContextAvailable {
+		tmpNasPdu, encodeErr := msg.PlainNasEncode()
+		return encapNasMsgToEnvelope(tmpNasPdu), encodeErr
+	}
+
+	if newSecurityContext {
+		ue.ULCount.Set(0, 0)
+		ue.DLCount.Set(0, 0)
+	}
+
+	sequenceNumber = ue.ULCount.SQN()
+
+	payload, err = msg.PlainNasEncode()
+	if err != nil {
+		return
+	}
+
+	if err = security.NASEncrypt(ue.CipheringAlg, ue.KnasEnc, ue.ULCount.Get(), ue.GetBearerType(),
+		security.DirectionUplink, payload); err != nil {
+		return
+	}
+	// add sequence number
+	payload = append([]byte{sequenceNumber}, payload[:]...)
+
+	mac32, macErr := security.NASMacCalculate(ue.IntegrityAlg, ue.KnasInt, ue.ULCount.Get(), ue.GetBearerType(),
+		security.DirectionUplink, payload)
+	if macErr != nil {
+		err = macErr
+		return
+	}
+
+	// Add mac value
+	payload = append(mac32, payload[:]...)
+	// Add EPD and Security Type
+	msgSecurityHeader := []byte{msg.SecurityHeader.ProtocolDiscriminator, msg.SecurityHeader.SecurityHeaderType}
+	payload = append(msgSecurityHeader, payload[:]...)
+
+	// Increase UL Count
+	ue.ULCount.AddOne()
+
+	payload = encapNasMsgToEnvelope(payload)
+	return payload, err
+}
+
+// EncodeNasPduInEnvelopeWithSecurity is like EncodeNasPduWithSecurity but wraps the
+// result in a NAS message envelope (see NASEnvelopeEncode), for NAS sent over the
+// N3IWF NAS TCP connection.
+func EncodeNasPduInEnvelopeWithSecurity(ue *RanUeContext, pdu []byte, securityHeaderType uint8,
+	securityContextAvailable, newSecurityContext bool,
+) ([]byte, error) {
+	m := nas.NewMessage()
+	err := m.PlainNasDecode(&pdu)
+	if err != nil {
+		return nil, err
+	}
+	m.SecurityHeader = nas.SecurityHeader{
+		ProtocolDiscriminator: nasMessage.Epd5GSMobilityManagementMessage,
+		SecurityHeaderType:    securityHeaderType,
+	}
+	return NASEnvelopeEncode(ue, m, securityContextAvailable, newSecurityContext)
+}
+
+// DecodePDUSessionEstablishmentAccept decodes a NAS message envelope received from
+// N3IWF (over the NAS TCP connection) expected to contain a DL NAS Transport carrying
+// a PDU Session Establishment Accept, and decodes the inner GSM message too.
+func DecodePDUSessionEstablishmentAccept(ue *RanUeContext, length int, buffer []byte) (*nas.Message, error) {
+	if length == 0 {
+		return nil, fmt.Errorf("Empty buffer")
+	}
+
+	nasEnv, n, err := DecapNasPduFromEnvelope(buffer[:length])
+	if err != nil {
+		return nil, err
+	}
+
+	nasMsg, err := NASDecode(ue, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, nasEnv[:n])
+	if err != nil {
+		return nil, fmt.Errorf("NAS Decode Fail: %+v", err)
+	}
+
+	// Retrieve GSM from GmmMessage.DLNASTransport.PayloadContainer and decode
+	payloadContainer := nasMsg.GmmMessage.DLNASTransport.PayloadContainer
+	byteArray := payloadContainer.Buffer[:payloadContainer.Len]
+	if err := nasMsg.GsmMessageDecode(&byteArray); err != nil {
+		return nil, fmt.Errorf("NAS Decode Fail: %+v", err)
+	}
+
+	return nasMsg, nil
+}
+
+// GetPDUAddress extracts the allocated UE IPv4 address from a PDU Session
+// Establishment Accept's PDU Address IE.
+func GetPDUAddress(accept *nasMessage.PDUSessionEstablishmentAccept) (net.IP, error) {
+	if accept == nil {
+		return nil, fmt.Errorf("PDUSessionEstablishmentAccept is nil")
+	} else if addr := accept.PDUAddress; addr != nil {
+		pduSessionTypeValue := addr.GetPDUSessionTypeValue()
+		if pduSessionTypeValue == nasMessage.PDUSessionTypeIPv4 {
+			ip := net.IP(addr.Octet[1:5])
+			return ip, nil
+		}
+	}
+
+	return nil, fmt.Errorf("PDUAddress is nil")
 }
