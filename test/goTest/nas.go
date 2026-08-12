@@ -676,3 +676,34 @@ func GetUlNasTransport_PduSessionReleaseComplete(pduSessionId uint8, requestType
 
 	return data.Bytes()
 }
+
+func GetAuthenticationFailure(cause5GMM uint8, authenticationFailureParam []uint8) []byte {
+	m := nas.NewMessage()
+	m.GmmMessage = nas.NewGmmMessage()
+	m.GmmHeader.SetMessageType(nas.MsgTypeAuthenticationFailure)
+
+	authenticationFailure := nasMessage.NewAuthenticationFailure(0)
+	authenticationFailure.ExtendedProtocolDiscriminator.SetExtendedProtocolDiscriminator(
+		nasMessage.Epd5GSMobilityManagementMessage)
+	authenticationFailure.SpareHalfOctetAndSecurityHeaderType.SetSecurityHeaderType(nas.SecurityHeaderTypePlainNas)
+	authenticationFailure.SpareHalfOctetAndSecurityHeaderType.SetSpareHalfOctet(0)
+	authenticationFailure.AuthenticationFailureMessageIdentity.SetMessageType(nas.MsgTypeAuthenticationFailure)
+	authenticationFailure.Cause5GMM.SetCauseValue(cause5GMM)
+
+	if cause5GMM == nasMessage.Cause5GMMSynchFailure {
+		authenticationFailure.AuthenticationFailureParameter = nasType.NewAuthenticationFailureParameter(
+			nasMessage.AuthenticationFailureAuthenticationFailureParameterType)
+		authenticationFailure.AuthenticationFailureParameter.SetLen(uint8(len(authenticationFailureParam)))
+		copy(authenticationFailure.AuthenticationFailureParameter.Octet[:], authenticationFailureParam)
+	}
+
+	m.GmmMessage.AuthenticationFailure = authenticationFailure
+
+	data := new(bytes.Buffer)
+	err := m.GmmMessageEncode(data)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return data.Bytes()
+}

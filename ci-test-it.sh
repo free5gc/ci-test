@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -102,6 +102,10 @@ case "$TARGET_TEST" in
     ;;
     "TestPaging")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-paging.sh"
+        exit_code=$?
+    ;;
+    "TestReSynchronization")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-resynchronization.sh"
         exit_code=$?
     ;;
 esac
