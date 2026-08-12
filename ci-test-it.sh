@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -110,6 +110,10 @@ case "$TARGET_TEST" in
     ;;
     "TestMultiAmfRegistration")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-multiamfregistration.sh"
+        exit_code=$?
+    ;;
+    "TestDC")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-dc.sh"
         exit_code=$?
     ;;
 esac

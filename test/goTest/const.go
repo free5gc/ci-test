@@ -21,11 +21,12 @@ const (
 
 	IT_IP      = "10.100.200.50"
 	IT_N2_PORT = 31413
-	IT_N3_PORT = 40104
+	IT_N3_PORT = 2152
 	IT_GNB_ID  = "\x00\x01\x02"
 
-	// second RAN (target gNB) used by handover tests; same IT host, different local port
+	IT_IP_2      = "10.100.200.51"
 	IT_N2_PORT_2 = 31414
+	IT_N3_PORT_2 = 2152
 	IT_GNB_ID_2  = "\x00\x01\x03"
 
 	UE_IMSI  = "imsi-208930000000001"

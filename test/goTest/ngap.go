@@ -1412,3 +1412,117 @@ func GetPathSwitchRequest(amfUeNgapID, ranUeNgapID int64) ([]byte, error) {
 		message.InitiatingMessage.Value.PathSwitchRequest.ProtocolIEs.List[0:5]
 	return ngap.Encoder(message)
 }
+
+// buildPDUSessionResourceSetupResponseTransferWithDC is like
+// buildPDUSessionResourceSetupResponseTransfer but additionally splits the QoS flow to
+// a secondary RAN via AdditionalDLQosFlowPerTNLInformation, for NR dual-connectivity
+// (NR-DC) tests where a single PDU session's downlink traffic is delivered through both
+// a master and a secondary RAN simultaneously.
+func buildPDUSessionResourceSetupResponseTransferWithDC(
+	mranDlTeid, sranDlTeid string,
+) (data ngapType.PDUSessionResourceSetupResponseTransfer) {
+	// QoS Flow per TNL Information (master RAN)
+	qosFlowPerTNLInformation := &data.DLQosFlowPerTNLInformation
+	qosFlowPerTNLInformation.UPTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+
+	upTransportLayerInformation := &qosFlowPerTNLInformation.UPTransportLayerInformation
+	upTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	upTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+	upTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString(mranDlTeid)
+	upTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP, "")
+
+	associatedQosFlowList := &qosFlowPerTNLInformation.AssociatedQosFlowList
+	associatedQosFlowItem := ngapType.AssociatedQosFlowItem{}
+	associatedQosFlowItem.QosFlowIdentifier.Value = 1
+	associatedQosFlowList.List = append(associatedQosFlowList.List, associatedQosFlowItem)
+
+	// Additional DL QoS Flow per TNL Information (secondary RAN)
+	dcQosFlowPerTNLInformationItem := ngapType.QosFlowPerTNLInformationItem{}
+	dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.UPTransportLayerInformation.Present =
+		ngapType.UPTransportLayerInformationPresentGTPTunnel
+
+	dcUpTransportLayerInformation := &dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.UPTransportLayerInformation
+	dcUpTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	dcUpTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+	dcUpTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString(sranDlTeid)
+	dcUpTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP_2, "")
+
+	dcAssociatedQosFlowList := &dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.AssociatedQosFlowList
+	dcAssociatedQosFlowItem := ngapType.AssociatedQosFlowItem{}
+	dcAssociatedQosFlowItem.QosFlowIdentifier.Value = 1
+	dcAssociatedQosFlowList.List = append(dcAssociatedQosFlowList.List, dcAssociatedQosFlowItem)
+
+	data.AdditionalDLQosFlowPerTNLInformation = new(ngapType.QosFlowPerTNLInformationList)
+	data.AdditionalDLQosFlowPerTNLInformation.List =
+		append(data.AdditionalDLQosFlowPerTNLInformation.List, dcQosFlowPerTNLInformationItem)
+
+	return data
+}
+
+func GetPDUSessionResourceSetupResponseTransferWithDC(mranDlTeid, sranDlTeid string) []byte {
+	data := buildPDUSessionResourceSetupResponseTransferWithDC(mranDlTeid, sranDlTeid)
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetPDUSessionResourceSetupResponseTransferWithDC: %+v", err)
+	}
+	return encodeData
+}
+
+func buildPDUSessionResourceSetupResponseWithDC(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, mranDlTeid, sranDlTeid string,
+) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentSuccessfulOutcome
+	pdu.SuccessfulOutcome = new(ngapType.SuccessfulOutcome)
+
+	successfulOutcome := pdu.SuccessfulOutcome
+	successfulOutcome.ProcedureCode.Value = ngapType.ProcedureCodePDUSessionResourceSetup
+	successfulOutcome.Criticality.Value = ngapType.CriticalityPresentReject
+
+	successfulOutcome.Value.Present = ngapType.SuccessfulOutcomePresentPDUSessionResourceSetupResponse
+	successfulOutcome.Value.PDUSessionResourceSetupResponse = new(ngapType.PDUSessionResourceSetupResponse)
+
+	pDUSessionResourceSetupResponse := successfulOutcome.Value.PDUSessionResourceSetupResponse
+	pDUSessionResourceSetupResponseIEs := &pDUSessionResourceSetupResponse.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+	ie.Value.AMFUENGAPID.Value = amfUeNgapId
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+	ie.Value.RANUENGAPID.Value = ranUeNgapId
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	// PDU Session Resource Setup Response List
+	ie = ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceSetupListSURes
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentPDUSessionResourceSetupListSURes
+	ie.Value.PDUSessionResourceSetupListSURes = new(ngapType.PDUSessionResourceSetupListSURes)
+
+	pDUSessionResourceSetupListSURes := ie.Value.PDUSessionResourceSetupListSURes
+	pDUSessionResourceSetupItemSURes := ngapType.PDUSessionResourceSetupItemSURes{}
+	pDUSessionResourceSetupItemSURes.PDUSessionID.Value = pduSessionId
+	pDUSessionResourceSetupItemSURes.PDUSessionResourceSetupResponseTransfer =
+		GetPDUSessionResourceSetupResponseTransferWithDC(mranDlTeid, sranDlTeid)
+	pDUSessionResourceSetupListSURes.List = append(pDUSessionResourceSetupListSURes.List, pDUSessionResourceSetupItemSURes)
+
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	return pdu
+}
+
+func GetPDUSessionResourceSetupResponseWithDC(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, mranDlTeid, sranDlTeid string,
+) ([]byte, error) {
+	return ngap.Encoder(buildPDUSessionResourceSetupResponseWithDC(pduSessionId, amfUeNgapId, ranUeNgapId, mranDlTeid, sranDlTeid))
+}

@@ -305,7 +305,7 @@ services:
       context: ../../dockerfiles/ci
       args:
         DEBUG_TOOLS: "false"
-    command: ["tail", "-f", "/dev/null"]
+    command: ["sh", "-c", "ip addr add 10.100.200.51/24 dev eth0 && tail -f /dev/null"]
     volumes:
       - ../../test:/root/test
     cap_add:
