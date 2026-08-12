@@ -1526,3 +1526,120 @@ func GetPDUSessionResourceSetupResponseWithDC(
 ) ([]byte, error) {
 	return ngap.Encoder(buildPDUSessionResourceSetupResponseWithDC(pduSessionId, amfUeNgapId, ranUeNgapId, mranDlTeid, sranDlTeid))
 }
+
+// buildPDUSessionResourceModifyIndicationTransferWithDC mirrors
+// buildPDUSessionResourceSetupResponseTransferWithDC but for the RAN-initiated PDU
+// Session Resource Modify Indication procedure, used by NR-DC tests to dynamically
+// add (enableDC=true) or remove (enableDC=false) the secondary RAN's QoS flow mapping
+// mid-session, without re-establishing the PDU session.
+func buildPDUSessionResourceModifyIndicationTransferWithDC(
+	enableDC bool, mranDlTeid, sranDlTeid string,
+) (data ngapType.PDUSessionResourceModifyIndicationTransfer) {
+	// QoS Flow per TNL Information (master RAN)
+	qosFlowPerTNLInformation := &data.DLQosFlowPerTNLInformation
+	qosFlowPerTNLInformation.UPTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+
+	upTransportLayerInformation := &qosFlowPerTNLInformation.UPTransportLayerInformation
+	upTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	upTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+	upTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString(mranDlTeid)
+	upTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP, "")
+
+	associatedQosFlowList := &qosFlowPerTNLInformation.AssociatedQosFlowList
+	associatedQosFlowItem := ngapType.AssociatedQosFlowItem{}
+	associatedQosFlowItem.QosFlowIdentifier.Value = 1
+	associatedQosFlowList.List = append(associatedQosFlowList.List, associatedQosFlowItem)
+
+	if enableDC {
+		// Additional DL QoS Flow per TNL Information (secondary RAN)
+		dcQosFlowPerTNLInformationItem := ngapType.QosFlowPerTNLInformationItem{}
+		dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.UPTransportLayerInformation.Present =
+			ngapType.UPTransportLayerInformationPresentGTPTunnel
+
+		dcUpTransportLayerInformation := &dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.UPTransportLayerInformation
+		dcUpTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+		dcUpTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+		dcUpTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString(sranDlTeid)
+		dcUpTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP_2, "")
+
+		dcAssociatedQosFlowList := &dcQosFlowPerTNLInformationItem.QosFlowPerTNLInformation.AssociatedQosFlowList
+		dcAssociatedQosFlowItem := ngapType.AssociatedQosFlowItem{}
+		dcAssociatedQosFlowItem.QosFlowIdentifier.Value = 1
+		dcAssociatedQosFlowList.List = append(dcAssociatedQosFlowList.List, dcAssociatedQosFlowItem)
+
+		data.AdditionalDLQosFlowPerTNLInformation = new(ngapType.QosFlowPerTNLInformationList)
+		data.AdditionalDLQosFlowPerTNLInformation.List =
+			append(data.AdditionalDLQosFlowPerTNLInformation.List, dcQosFlowPerTNLInformationItem)
+	}
+
+	return data
+}
+
+func GetPDUSessionResourceModifyIndicationTransferWithDC(enableDC bool, mranDlTeid, sranDlTeid string) []byte {
+	data := buildPDUSessionResourceModifyIndicationTransferWithDC(enableDC, mranDlTeid, sranDlTeid)
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetPDUSessionResourceModifyIndicationTransferWithDC: %+v", err)
+	}
+	return encodeData
+}
+
+func buildPDUSessionResourceModifyIndication(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, enableDC bool, mranDlTeid, sranDlTeid string,
+) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentInitiatingMessage
+	pdu.InitiatingMessage = new(ngapType.InitiatingMessage)
+
+	initiatingMessage := pdu.InitiatingMessage
+	initiatingMessage.ProcedureCode.Value = ngapType.ProcedureCodePDUSessionResourceModifyIndication
+	initiatingMessage.Criticality.Value = ngapType.CriticalityPresentReject
+
+	initiatingMessage.Value.Present = ngapType.InitiatingMessagePresentPDUSessionResourceModifyIndication
+	initiatingMessage.Value.PDUSessionResourceModifyIndication = new(ngapType.PDUSessionResourceModifyIndication)
+
+	indication := initiatingMessage.Value.PDUSessionResourceModifyIndication
+	indicationIEs := &indication.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.PDUSessionResourceModifyIndicationIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceModifyIndicationIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+	ie.Value.AMFUENGAPID.Value = amfUeNgapId
+	indicationIEs.List = append(indicationIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.PDUSessionResourceModifyIndicationIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceModifyIndicationIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+	ie.Value.RANUENGAPID.Value = ranUeNgapId
+	indicationIEs.List = append(indicationIEs.List, ie)
+
+	// PDU Session Resource Modify List
+	ie = ngapType.PDUSessionResourceModifyIndicationIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceModifyListModInd
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.PDUSessionResourceModifyIndicationIEsPresentPDUSessionResourceModifyListModInd
+	ie.Value.PDUSessionResourceModifyListModInd = new(ngapType.PDUSessionResourceModifyListModInd)
+
+	modifyItem := ngapType.PDUSessionResourceModifyItemModInd{}
+	modifyItem.PDUSessionID.Value = pduSessionId
+	modifyItem.PDUSessionResourceModifyIndicationTransfer = GetPDUSessionResourceModifyIndicationTransferWithDC(enableDC, mranDlTeid, sranDlTeid)
+
+	ie.Value.PDUSessionResourceModifyListModInd.List = append(
+		ie.Value.PDUSessionResourceModifyListModInd.List, modifyItem)
+
+	indicationIEs.List = append(indicationIEs.List, ie)
+
+	return pdu
+}
+
+func GetPDUSessionResourceModifyIndication(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, enableDC bool, mranDlTeid, sranDlTeid string,
+) ([]byte, error) {
+	return ngap.Encoder(
+		buildPDUSessionResourceModifyIndication(pduSessionId, amfUeNgapId, ranUeNgapId, enableDC, mranDlTeid, sranDlTeid))
+}
