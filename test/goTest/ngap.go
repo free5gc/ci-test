@@ -1643,3 +1643,179 @@ func GetPDUSessionResourceModifyIndication(
 	return ngap.Encoder(
 		buildPDUSessionResourceModifyIndication(pduSessionId, amfUeNgapId, ranUeNgapId, enableDC, mranDlTeid, sranDlTeid))
 }
+
+// buildPathSwitchRequestTransferWithDC is like buildPathSwitchRequestTransfer but adds
+// the new secondary RAN's downlink tunnel via AdditionalDLQosFlowPerTNLInformation in
+// the transfer's IE Extensions. Used for Xn handover between an NR-DC master/secondary
+// pair: the RAN initiating the switch becomes the new master (DLNGUUPTNLInformation),
+// its former peer becomes the new secondary (the extension).
+func buildPathSwitchRequestTransferWithDC(newMranDlTeid, newSranDlTeid string) ngapType.PathSwitchRequestTransfer {
+	var data ngapType.PathSwitchRequestTransfer
+
+	// DL NG-U UP TNL information (new master RAN)
+	upTransportLayerInformation := &data.DLNGUUPTNLInformation
+	upTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	upTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+	upTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString(newMranDlTeid)
+	upTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP_2, "")
+
+	// Qos Flow Accepted List
+	qosFlowAcceptedList := &data.QosFlowAcceptedList
+	qosFlowAcceptedItem := ngapType.QosFlowAcceptedItem{
+		QosFlowIdentifier: ngapType.QosFlowIdentifier{
+			Value: 1,
+		},
+	}
+	qosFlowAcceptedList.List = append(qosFlowAcceptedList.List, qosFlowAcceptedItem)
+
+	// Additional DL QoS Flow per TNL Information at IE Extensions (new secondary RAN)
+	data.IEExtensions = new(ngapType.ProtocolExtensionContainerPathSwitchRequestTransferExtIEs)
+	data.IEExtensions.List = append(data.IEExtensions.List, ngapType.PathSwitchRequestTransferExtIEs{
+		Id: ngapType.ProtocolExtensionID{
+			Value: ngapType.ProtocolIEIDAdditionalDLQosFlowPerTNLInformation,
+		},
+		Criticality: ngapType.Criticality{
+			Value: ngapType.CriticalityPresentIgnore,
+		},
+		ExtensionValue: ngapType.PathSwitchRequestTransferExtIEsExtensionValue{
+			Present: ngapType.PathSwitchRequestTransferExtIEsPresentAdditionalDLQosFlowPerTNLInformation,
+			AdditionalDLQosFlowPerTNLInformation: &ngapType.QosFlowPerTNLInformationList{
+				List: []ngapType.QosFlowPerTNLInformationItem{
+					{
+						QosFlowPerTNLInformation: ngapType.QosFlowPerTNLInformation{
+							UPTransportLayerInformation: ngapType.UPTransportLayerInformation{
+								Present: ngapType.UPTransportLayerInformationPresentGTPTunnel,
+								GTPTunnel: &ngapType.GTPTunnel{
+									GTPTEID: ngapType.GTPTEID{
+										Value: aper.OctetString(newSranDlTeid),
+									},
+									TransportLayerAddress: ngapConvert.IPAddressToNgap(IT_IP, ""),
+								},
+							},
+							AssociatedQosFlowList: ngapType.AssociatedQosFlowList{
+								List: []ngapType.AssociatedQosFlowItem{
+									{
+										QosFlowIdentifier: ngapType.QosFlowIdentifier{
+											Value: 1,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	return data
+}
+
+func GetPathSwitchRequestTransferWithDC(newMranDlTeid, newSranDlTeid string) []byte {
+	data := buildPathSwitchRequestTransferWithDC(newMranDlTeid, newSranDlTeid)
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetPathSwitchRequestTransferWithDC: %+v", err)
+	}
+	return encodeData
+}
+
+func buildPathSwitchRequestWithDC(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, newMranDlTeid, newSranDlTeid string,
+) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentInitiatingMessage
+	pdu.InitiatingMessage = new(ngapType.InitiatingMessage)
+
+	initiatingMessage := pdu.InitiatingMessage
+	initiatingMessage.ProcedureCode.Value = ngapType.ProcedureCodePathSwitchRequest
+	initiatingMessage.Criticality.Value = ngapType.CriticalityPresentReject
+
+	initiatingMessage.Value.Present = ngapType.InitiatingMessagePresentPathSwitchRequest
+	initiatingMessage.Value.PathSwitchRequest = new(ngapType.PathSwitchRequest)
+
+	pathSwitchRequest := initiatingMessage.Value.PathSwitchRequest
+	pathSwitchRequestIEs := &pathSwitchRequest.ProtocolIEs
+
+	// RAN UE NGAP ID
+	ie := ngapType.PathSwitchRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+	ie.Value.RANUENGAPID.Value = ranUeNgapId
+	pathSwitchRequestIEs.List = append(pathSwitchRequestIEs.List, ie)
+
+	// Source AMF UE NGAP ID
+	ie = ngapType.PathSwitchRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDSourceAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentSourceAMFUENGAPID
+	ie.Value.SourceAMFUENGAPID = new(ngapType.AMFUENGAPID)
+	ie.Value.SourceAMFUENGAPID.Value = amfUeNgapId
+	pathSwitchRequestIEs.List = append(pathSwitchRequestIEs.List, ie)
+
+	// User Location Information
+	ie = ngapType.PathSwitchRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDUserLocationInformation
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentUserLocationInformation
+	ie.Value.UserLocationInformation = new(ngapType.UserLocationInformation)
+
+	userLocationInformation := ie.Value.UserLocationInformation
+	userLocationInformation.Present = ngapType.UserLocationInformationPresentUserLocationInformationNR
+	userLocationInformation.UserLocationInformationNR = new(ngapType.UserLocationInformationNR)
+
+	userLocationInformationNR := userLocationInformation.UserLocationInformationNR
+	userLocationInformationNR.NRCGI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationNR.NRCGI.NRCellIdentity.Value = aper.BitString{
+		Bytes:     []byte{0x00, 0x00, 0x00, 0x00, 0x20},
+		BitLength: 36,
+	}
+	userLocationInformationNR.TAI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationNR.TAI.TAC.Value = aper.OctetString("\x00\x00\x01")
+
+	pathSwitchRequestIEs.List = append(pathSwitchRequestIEs.List, ie)
+
+	// UE Security Capabilities
+	ie = ngapType.PathSwitchRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDUESecurityCapabilities
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentUESecurityCapabilities
+	ie.Value.UESecurityCapabilities = new(ngapType.UESecurityCapabilities)
+
+	uESecurityCapabilities := ie.Value.UESecurityCapabilities
+	uESecurityCapabilities.NRencryptionAlgorithms.Value = aper.BitString{Bytes: []byte{0xff, 0xff}, BitLength: 16}
+	uESecurityCapabilities.NRintegrityProtectionAlgorithms.Value = aper.BitString{Bytes: []byte{0xff, 0xff}, BitLength: 16}
+	uESecurityCapabilities.EUTRAencryptionAlgorithms.Value = aper.BitString{Bytes: []byte{0xff, 0xff}, BitLength: 16}
+	uESecurityCapabilities.EUTRAintegrityProtectionAlgorithms.Value = aper.BitString{Bytes: []byte{0xff, 0xff}, BitLength: 16}
+
+	pathSwitchRequestIEs.List = append(pathSwitchRequestIEs.List, ie)
+
+	// PDU Session Resource to be Switched in Downlink List
+	ie = ngapType.PathSwitchRequestIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceToBeSwitchedDLList
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.PathSwitchRequestIEsPresentPDUSessionResourceToBeSwitchedDLList
+	ie.Value.PDUSessionResourceToBeSwitchedDLList = new(ngapType.PDUSessionResourceToBeSwitchedDLList)
+
+	pDUSessionResourceToBeSwitchedDLItem := ngapType.PDUSessionResourceToBeSwitchedDLItem{}
+	pDUSessionResourceToBeSwitchedDLItem.PDUSessionID.Value = pduSessionId
+	pDUSessionResourceToBeSwitchedDLItem.PathSwitchRequestTransfer = GetPathSwitchRequestTransferWithDC(newMranDlTeid, newSranDlTeid)
+
+	ie.Value.PDUSessionResourceToBeSwitchedDLList.List = append(
+		ie.Value.PDUSessionResourceToBeSwitchedDLList.List, pDUSessionResourceToBeSwitchedDLItem)
+
+	pathSwitchRequestIEs.List = append(pathSwitchRequestIEs.List, ie)
+
+	// note: unlike the plain GetPathSwitchRequest, this DC variant has no PDU Session
+	// Resource Failed to Setup List IE at all (matching the reference test, which
+	// leaves that IE commented out here rather than building-then-truncating it).
+
+	return pdu
+}
+
+func GetPathSwitchRequestWithDC(
+	pduSessionId, amfUeNgapId, ranUeNgapId int64, newMranDlTeid, newSranDlTeid string,
+) ([]byte, error) {
+	return ngap.Encoder(buildPathSwitchRequestWithDC(pduSessionId, amfUeNgapId, ranUeNgapId, newMranDlTeid, newSranDlTeid))
+}

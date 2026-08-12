@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -118,6 +118,10 @@ case "$TARGET_TEST" in
     ;;
     "TestDynamicDC")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-dynamicdc.sh"
+        exit_code=$?
+    ;;
+    "TestXnDcHandover")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-xndchandover.sh"
         exit_code=$?
     ;;
 esac

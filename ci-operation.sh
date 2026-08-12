@@ -35,7 +35,7 @@ IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
 E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
-IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC"
+IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover"
 
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
