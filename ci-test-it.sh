@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -94,6 +94,10 @@ case "$TARGET_TEST" in
     ;;
     "TestN2Handover")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-n2handover.sh"
+        exit_code=$?
+    ;;
+    "TestXnHandover")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-xnhandover.sh"
         exit_code=$?
     ;;
 esac

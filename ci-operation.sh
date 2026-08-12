@@ -35,7 +35,7 @@ IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
 E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
-IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover"
+IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover"
 
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
@@ -96,15 +96,6 @@ main() {
         "test")
             case "$2" in
                 "it")
-                    # ./ci-test-it.sh --test TestRegistration --build
-                    # ./ci-test-it.sh --test TestDeregistration --build
-                    # ./ci-test-it.sh --test TestGUTIRegistration --build
-                    # ./ci-test-it.sh --test TestEAPAKAPrimeAuthentication --build
-                    # ./ci-test-it.sh --test TestDuplicateRegistration --build
-                    # ./ci-test-it.sh --test TestServiceRequest --build
-                    # ./ci-test-it.sh --test TestPDUSessionReleaseRequest --build
-                    # ./ci-test-it.sh --test TestNasReroute --build
-
                     ./ci-test-it.sh --test $3 --build
                 ;;
                 "it-all")
