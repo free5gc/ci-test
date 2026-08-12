@@ -9,7 +9,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -90,6 +90,10 @@ case "$TARGET_TEST" in
     ;;
     "TestNasReroute")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-nasreroute.sh"
+        exit_code=$?
+    ;;
+    "TestN2Handover")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-n2handover.sh"
         exit_code=$?
     ;;
 esac

@@ -16,6 +16,7 @@ require (
 	github.com/free5gc/util v1.3.2-0.20260319090834-b2a2938f37b4
 	github.com/free5gc/webconsole v1.4.4
 	github.com/google/uuid v1.6.0
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/net v0.51.0
 )

@@ -35,7 +35,7 @@ IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
 E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
-IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute"
+IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover"
 
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
@@ -104,12 +104,6 @@ main() {
                     # ./ci-test-it.sh --test TestServiceRequest --build
                     # ./ci-test-it.sh --test TestPDUSessionReleaseRequest --build
                     # ./ci-test-it.sh --test TestNasReroute --build
-
-                    if [[ ! "$3" =~ ^($IT_TEST_POOL)$ ]]; then
-                        echo "Error: test name '$3' is not in the allowed test pool"
-                        echo "Allowed tests: $IT_TEST_POOL"
-                        exit 1
-                    fi
 
                     ./ci-test-it.sh --test $3 --build
                 ;;

@@ -767,3 +767,457 @@ func buildInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID 
 func GetInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID int64, ipv4 string) ([]byte, error) {
 	return ngap.Encoder(buildInitialContextSetupResponseForServiceRequest(amfUeNgapID, ranUeNgapID, ipv4))
 }
+
+func buildHandoverRequestAcknowledgeTransfer() (data ngapType.HandoverRequestAcknowledgeTransfer) {
+	// DL NG-U UP TNL information
+	upTransportLayerInformation := &data.DLNGUUPTNLInformation
+	upTransportLayerInformation.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	upTransportLayerInformation.GTPTunnel = new(ngapType.GTPTunnel)
+	upTransportLayerInformation.GTPTunnel.GTPTEID.Value = aper.OctetString("\x00\x00\x00\x01")
+	upTransportLayerInformation.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP, "")
+
+	// Qos Flow Setup Response List
+	qosFlowSetupResponseItem := ngapType.QosFlowItemWithDataForwarding{
+		QosFlowIdentifier: ngapType.QosFlowIdentifier{
+			Value: 9,
+		},
+	}
+
+	data.DLForwardingUPTNLInformation = new(ngapType.UPTransportLayerInformation)
+	dlForwardingUPTNLInfo := data.DLForwardingUPTNLInformation
+	dlForwardingUPTNLInfo.Present = ngapType.UPTransportLayerInformationPresentGTPTunnel
+	dlForwardingUPTNLInfo.GTPTunnel = new(ngapType.GTPTunnel)
+	dlForwardingUPTNLInfo.GTPTunnel.GTPTEID.Value = aper.OctetString("\x00\x00\x00\x02")
+	dlForwardingUPTNLInfo.GTPTunnel.TransportLayerAddress = ngapConvert.IPAddressToNgap(IT_IP, "")
+
+	data.QosFlowSetupResponseList.List = append(data.QosFlowSetupResponseList.List, qosFlowSetupResponseItem)
+
+	return data
+}
+
+func GetHandoverRequestAcknowledgeTransfer() []byte {
+	data := buildHandoverRequestAcknowledgeTransfer()
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetHandoverRequestAcknowledgeTransfer: %+v", err)
+	}
+	return encodeData
+}
+
+func buildHandoverRequestAcknowledge(amfUeNgapID, ranUeNgapID int64) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentSuccessfulOutcome
+	pdu.SuccessfulOutcome = new(ngapType.SuccessfulOutcome)
+
+	successfulOutcome := pdu.SuccessfulOutcome
+	successfulOutcome.ProcedureCode.Value = ngapType.ProcedureCodeHandoverResourceAllocation
+	successfulOutcome.Criticality.Value = ngapType.CriticalityPresentReject
+
+	successfulOutcome.Value.Present = ngapType.SuccessfulOutcomePresentHandoverRequestAcknowledge
+	successfulOutcome.Value.HandoverRequestAcknowledge = new(ngapType.HandoverRequestAcknowledge)
+
+	handoverRequestAcknowledge := successfulOutcome.Value.HandoverRequestAcknowledge
+	handoverRequestAcknowledgeIEs := &handoverRequestAcknowledge.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.HandoverRequestAcknowledgeIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.HandoverRequestAcknowledgeIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+
+	aMFUENGAPID := ie.Value.AMFUENGAPID
+	aMFUENGAPID.Value = amfUeNgapID
+
+	handoverRequestAcknowledgeIEs.List = append(handoverRequestAcknowledgeIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.HandoverRequestAcknowledgeIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.HandoverRequestAcknowledgeIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+
+	rANUENGAPID := ie.Value.RANUENGAPID
+	rANUENGAPID.Value = ranUeNgapID
+
+	handoverRequestAcknowledgeIEs.List = append(handoverRequestAcknowledgeIEs.List, ie)
+
+	// PDU Session Resource Admitted List
+	ie = ngapType.HandoverRequestAcknowledgeIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceAdmittedList
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.HandoverRequestAcknowledgeIEsPresentPDUSessionResourceAdmittedList
+	ie.Value.PDUSessionResourceAdmittedList = new(ngapType.PDUSessionResourceAdmittedList)
+
+	pDUSessionResourceAdmittedList := ie.Value.PDUSessionResourceAdmittedList
+
+	// PDU Session Resource Admitted Item
+	pDUSessionResourceAdmittedItem := ngapType.PDUSessionResourceAdmittedItem{}
+	pDUSessionResourceAdmittedItem.PDUSessionID.Value = 10
+	pDUSessionResourceAdmittedItem.HandoverRequestAcknowledgeTransfer = GetHandoverRequestAcknowledgeTransfer()
+
+	pDUSessionResourceAdmittedList.List = append(pDUSessionResourceAdmittedList.List, pDUSessionResourceAdmittedItem)
+
+	handoverRequestAcknowledgeIEs.List = append(handoverRequestAcknowledgeIEs.List, ie)
+
+	// Target To Source TransparentContainer
+	ie = ngapType.HandoverRequestAcknowledgeIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDTargetToSourceTransparentContainer
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequestAcknowledgeIEsPresentTargetToSourceTransparentContainer
+	ie.Value.TargetToSourceTransparentContainer = new(ngapType.TargetToSourceTransparentContainer)
+
+	targetToSourceTransparentContainer := ie.Value.TargetToSourceTransparentContainer
+	targetToSourceTransparentContainer.Value = aper.OctetString("\x00\x01\x00\x00")
+
+	handoverRequestAcknowledgeIEs.List = append(handoverRequestAcknowledgeIEs.List, ie)
+
+	return pdu
+}
+
+func GetHandoverRequestAcknowledge(amfUeNgapID, ranUeNgapID int64) ([]byte, error) {
+	return ngap.Encoder(buildHandoverRequestAcknowledge(amfUeNgapID, ranUeNgapID))
+}
+
+func buildHandoverNotify(amfUeNgapID, ranUeNgapID int64) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentInitiatingMessage
+	pdu.InitiatingMessage = new(ngapType.InitiatingMessage)
+
+	initiatingMessage := pdu.InitiatingMessage
+	initiatingMessage.ProcedureCode.Value = ngapType.ProcedureCodeHandoverNotification
+	initiatingMessage.Criticality.Value = ngapType.CriticalityPresentIgnore
+
+	initiatingMessage.Value.Present = ngapType.InitiatingMessagePresentHandoverNotify
+	initiatingMessage.Value.HandoverNotify = new(ngapType.HandoverNotify)
+
+	handoverNotify := initiatingMessage.Value.HandoverNotify
+	handoverNotifyIEs := &handoverNotify.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.HandoverNotifyIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverNotifyIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+
+	aMFUENGAPID := ie.Value.AMFUENGAPID
+	aMFUENGAPID.Value = amfUeNgapID
+
+	handoverNotifyIEs.List = append(handoverNotifyIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.HandoverNotifyIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverNotifyIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+
+	rANUENGAPID := ie.Value.RANUENGAPID
+	rANUENGAPID.Value = ranUeNgapID
+
+	handoverNotifyIEs.List = append(handoverNotifyIEs.List, ie)
+
+	// User Location Information
+	ie = ngapType.HandoverNotifyIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDUserLocationInformation
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverNotifyIEsPresentUserLocationInformation
+	ie.Value.UserLocationInformation = new(ngapType.UserLocationInformation)
+
+	userLocationInformation := ie.Value.UserLocationInformation
+	userLocationInformation.Present = ngapType.UserLocationInformationPresentUserLocationInformationEUTRA
+	userLocationInformation.UserLocationInformationEUTRA = new(ngapType.UserLocationInformationEUTRA)
+
+	userLocationInformationEUTRA := userLocationInformation.UserLocationInformationEUTRA
+	userLocationInformationEUTRA.TAI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationEUTRA.TAI.TAC.Value = aper.OctetString("\x00\x00\x01")
+
+	userLocationInformationEUTRA.EUTRACGI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	userLocationInformationEUTRA.EUTRACGI.EUTRACellIdentity.Value = aper.BitString{
+		Bytes:     []byte{0x24, 0x16, 0x08, 0xFF},
+		BitLength: 28,
+	}
+
+	handoverNotifyIEs.List = append(handoverNotifyIEs.List, ie)
+
+	return pdu
+}
+
+func GetHandoverNotify(amfUeNgapID, ranUeNgapID int64) ([]byte, error) {
+	return ngap.Encoder(buildHandoverNotify(amfUeNgapID, ranUeNgapID))
+}
+
+func buildPDUSessionResourceSetupResponseForPaging(amfUeNgapID, ranUeNgapID int64, ipv4 string) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentSuccessfulOutcome
+	pdu.SuccessfulOutcome = new(ngapType.SuccessfulOutcome)
+
+	successfulOutcome := pdu.SuccessfulOutcome
+	successfulOutcome.ProcedureCode.Value = ngapType.ProcedureCodePDUSessionResourceSetup
+	successfulOutcome.Criticality.Value = ngapType.CriticalityPresentReject
+
+	successfulOutcome.Value.Present = ngapType.SuccessfulOutcomePresentPDUSessionResourceSetupResponse
+	successfulOutcome.Value.PDUSessionResourceSetupResponse = new(ngapType.PDUSessionResourceSetupResponse)
+
+	pDUSessionResourceSetupResponse := successfulOutcome.Value.PDUSessionResourceSetupResponse
+	pDUSessionResourceSetupResponseIEs := &pDUSessionResourceSetupResponse.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+
+	aMFUENGAPID := ie.Value.AMFUENGAPID
+	aMFUENGAPID.Value = amfUeNgapID
+
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+
+	rANUENGAPID := ie.Value.RANUENGAPID
+	rANUENGAPID.Value = ranUeNgapID
+
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	// PDU Session Resource Setup Response List
+	ie = ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceSetupListSURes
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentPDUSessionResourceSetupListSURes
+	ie.Value.PDUSessionResourceSetupListSURes = new(ngapType.PDUSessionResourceSetupListSURes)
+
+	pDUSessionResourceSetupListSURes := ie.Value.PDUSessionResourceSetupListSURes
+
+	// PDU Session Resource Setup Response Item in PDU Session Resource Setup Response List
+	pDUSessionResourceSetupItemSURes := ngapType.PDUSessionResourceSetupItemSURes{}
+	pDUSessionResourceSetupItemSURes.PDUSessionID.Value = 10
+
+	pDUSessionResourceSetupItemSURes.PDUSessionResourceSetupResponseTransfer =
+		GetPDUSessionResourceSetupResponseTransfer(ipv4)
+
+	pDUSessionResourceSetupListSURes.List = append(pDUSessionResourceSetupListSURes.List, pDUSessionResourceSetupItemSURes)
+
+	pDUSessionResourceSetupResponseIEs.List = append(pDUSessionResourceSetupResponseIEs.List, ie)
+
+	// PDU Session Resource Failed to Setup List
+	ie = ngapType.PDUSessionResourceSetupResponseIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceFailedToSetupListSURes
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.PDUSessionResourceSetupResponseIEsPresentPDUSessionResourceFailedToSetupListSURes
+	ie.Value.PDUSessionResourceFailedToSetupListSURes = new(ngapType.PDUSessionResourceFailedToSetupListSURes)
+
+	return pdu
+}
+
+func GetPDUSessionResourceSetupResponseForPaging(amfUeNgapID, ranUeNgapID int64, ipv4 string) ([]byte, error) {
+	return ngap.Encoder(buildPDUSessionResourceSetupResponseForPaging(amfUeNgapID, ranUeNgapID, ipv4))
+}
+
+func buildHandoverRequiredTransfer() (data ngapType.HandoverRequiredTransfer) {
+	data.DirectForwardingPathAvailability = new(ngapType.DirectForwardingPathAvailability)
+	data.DirectForwardingPathAvailability.Value = ngapType.DirectForwardingPathAvailabilityPresentDirectPathAvailable
+	return data
+}
+
+func GetHandoverRequiredTransfer() []byte {
+	data := buildHandoverRequiredTransfer()
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetHandoverRequiredTransfer: %+v", err)
+	}
+	return encodeData
+}
+
+func buildSourceToTargetTransparentTransfer(
+	targetGNBID []byte, targetCellID []byte,
+) (data ngapType.SourceNGRANNodeToTargetNGRANNodeTransparentContainer) {
+	// RRC Container
+	data.RRCContainer.Value = aper.OctetString("\x00\x00\x11")
+
+	// PDU Session Resource Information List
+	data.PDUSessionResourceInformationList = new(ngapType.PDUSessionResourceInformationList)
+	infoItem := ngapType.PDUSessionResourceInformationItem{}
+	infoItem.PDUSessionID.Value = 10
+	qosItem := ngapType.QosFlowInformationItem{}
+	qosItem.QosFlowIdentifier.Value = 1
+	infoItem.QosFlowInformationList.List = append(infoItem.QosFlowInformationList.List, qosItem)
+	data.PDUSessionResourceInformationList.List = append(data.PDUSessionResourceInformationList.List, infoItem)
+
+	// Target Cell ID
+	data.TargetCellID.Present = ngapType.TargetIDPresentTargetRANNodeID
+	data.TargetCellID.NRCGI = new(ngapType.NRCGI)
+	data.TargetCellID.NRCGI.PLMNIdentity = PLMN
+	data.TargetCellID.NRCGI.NRCellIdentity.Value = aper.BitString{
+		Bytes:     append(targetGNBID, targetCellID...),
+		BitLength: 36,
+	}
+
+	// UE History Information
+	lastVisitedCellItem := ngapType.LastVisitedCellItem{}
+	lastVisitedCellInfo := &lastVisitedCellItem.LastVisitedCellInformation
+	lastVisitedCellInfo.Present = ngapType.LastVisitedCellInformationPresentNGRANCell
+	lastVisitedCellInfo.NGRANCell = new(ngapType.LastVisitedNGRANCellInformation)
+	ngRanCell := lastVisitedCellInfo.NGRANCell
+	ngRanCell.GlobalCellID.Present = ngapType.NGRANCGIPresentNRCGI
+	ngRanCell.GlobalCellID.NRCGI = new(ngapType.NRCGI)
+	ngRanCell.GlobalCellID.NRCGI.PLMNIdentity = PLMN
+	ngRanCell.GlobalCellID.NRCGI.NRCellIdentity.Value = aper.BitString{
+		Bytes:     []byte{0x00, 0x00, 0x00, 0x00, 0x10},
+		BitLength: 36,
+	}
+	ngRanCell.CellType.CellSize.Value = ngapType.CellSizePresentVerysmall
+	ngRanCell.TimeUEStayedInCell.Value = 10
+
+	data.UEHistoryInformation.List = append(data.UEHistoryInformation.List, lastVisitedCellItem)
+	return data
+}
+
+func GetSourceToTargetTransparentTransfer(targetGNBID []byte, targetCellID []byte) []byte {
+	data := buildSourceToTargetTransparentTransfer(targetGNBID, targetCellID)
+	encodeData, err := aper.MarshalWithParams(data, "valueExt")
+	if err != nil {
+		fatal.Fatalf("aper MarshalWithParams error in GetSourceToTargetTransparentTransfer: %+v", err)
+	}
+	return encodeData
+}
+
+func buildHandoverRequired(
+	amfUeNgapID, ranUeNgapID int64, targetGNBID []byte, targetCellID []byte,
+) (pdu ngapType.NGAPPDU) {
+	pdu.Present = ngapType.NGAPPDUPresentInitiatingMessage
+	pdu.InitiatingMessage = new(ngapType.InitiatingMessage)
+
+	initiatingMessage := pdu.InitiatingMessage
+	initiatingMessage.ProcedureCode.Value = ngapType.ProcedureCodeHandoverPreparation
+	initiatingMessage.Criticality.Value = ngapType.CriticalityPresentReject
+
+	initiatingMessage.Value.Present = ngapType.InitiatingMessagePresentHandoverRequired
+	initiatingMessage.Value.HandoverRequired = new(ngapType.HandoverRequired)
+
+	handoverRequired := initiatingMessage.Value.HandoverRequired
+	handoverRequiredIEs := &handoverRequired.ProtocolIEs
+
+	// AMF UE NGAP ID
+	ie := ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDAMFUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentAMFUENGAPID
+	ie.Value.AMFUENGAPID = new(ngapType.AMFUENGAPID)
+
+	aMFUENGAPID := ie.Value.AMFUENGAPID
+	aMFUENGAPID.Value = amfUeNgapID
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// RAN UE NGAP ID
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDRANUENGAPID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentRANUENGAPID
+	ie.Value.RANUENGAPID = new(ngapType.RANUENGAPID)
+
+	rANUENGAPID := ie.Value.RANUENGAPID
+	rANUENGAPID.Value = ranUeNgapID
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// Handover Type
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDHandoverType
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentHandoverType
+	ie.Value.HandoverType = new(ngapType.HandoverType)
+
+	handoverType := ie.Value.HandoverType
+	handoverType.Value = ngapType.HandoverTypePresentIntra5gs
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// Cause
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDCause
+	ie.Criticality.Value = ngapType.CriticalityPresentIgnore
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentCause
+	ie.Value.Cause = new(ngapType.Cause)
+
+	cause := ie.Value.Cause
+	cause.Present = ngapType.CausePresentRadioNetwork
+	cause.RadioNetwork = new(ngapType.CauseRadioNetwork)
+	cause.RadioNetwork.Value = ngapType.CauseRadioNetworkPresentHandoverDesirableForRadioReason
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// Target ID
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDTargetID
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentTargetID
+	ie.Value.TargetID = new(ngapType.TargetID)
+
+	targetID := ie.Value.TargetID
+	targetID.Present = ngapType.TargetIDPresentTargetRANNodeID
+	targetID.TargetRANNodeID = new(ngapType.TargetRANNodeID)
+
+	targetRANNodeID := targetID.TargetRANNodeID
+	targetRANNodeID.GlobalRANNodeID.Present = ngapType.GlobalRANNodeIDPresentGlobalGNBID
+	targetRANNodeID.GlobalRANNodeID.GlobalGNBID = new(ngapType.GlobalGNBID)
+
+	globalRANNodeID := targetRANNodeID.GlobalRANNodeID
+	globalRANNodeID.GlobalGNBID.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	globalRANNodeID.GlobalGNBID.GNBID.Present = ngapType.GNBIDPresentGNBID
+
+	globalRANNodeID.GlobalGNBID.GNBID.GNBID = new(aper.BitString)
+
+	gNBID := globalRANNodeID.GlobalGNBID.GNBID.GNBID
+
+	*gNBID = aper.BitString{
+		Bytes:     targetGNBID,
+		BitLength: uint64(len(targetGNBID) * 8),
+	}
+
+	targetRANNodeID.SelectedTAI.PLMNIdentity.Value = aper.OctetString(PLMN_OCT)
+	targetRANNodeID.SelectedTAI.TAC.Value = aper.OctetString("\x00\x00\x01")
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// PDU Session Resource List
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDPDUSessionResourceListHORqd
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentPDUSessionResourceListHORqd
+	ie.Value.PDUSessionResourceListHORqd = new(ngapType.PDUSessionResourceListHORqd)
+
+	pDUSessionResourceListHORqd := ie.Value.PDUSessionResourceListHORqd
+
+	// PDU Session Resource Item (in PDU Session Resource List)
+	pDUSessionResourceItem := ngapType.PDUSessionResourceItemHORqd{}
+	pDUSessionResourceItem.PDUSessionID.Value = 10
+	pDUSessionResourceItem.HandoverRequiredTransfer = GetHandoverRequiredTransfer()
+
+	pDUSessionResourceListHORqd.List = append(pDUSessionResourceListHORqd.List, pDUSessionResourceItem)
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	// Source to Target Transparent Container
+	ie = ngapType.HandoverRequiredIEs{}
+	ie.Id.Value = ngapType.ProtocolIEIDSourceToTargetTransparentContainer
+	ie.Criticality.Value = ngapType.CriticalityPresentReject
+	ie.Value.Present = ngapType.HandoverRequiredIEsPresentSourceToTargetTransparentContainer
+	ie.Value.SourceToTargetTransparentContainer = new(ngapType.SourceToTargetTransparentContainer)
+
+	ie.Value.SourceToTargetTransparentContainer.Value = GetSourceToTargetTransparentTransfer(targetGNBID, targetCellID)
+
+	handoverRequiredIEs.List = append(handoverRequiredIEs.List, ie)
+
+	return pdu
+}
+
+func GetHandoverRequired(amfUeNgapID, ranUeNgapID int64, targetGNBID []byte, targetCellID []byte) ([]byte, error) {
+	return ngap.Encoder(buildHandoverRequired(amfUeNgapID, ranUeNgapID, targetGNBID, targetCellID))
+}
