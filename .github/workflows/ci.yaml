@@ -194,7 +194,7 @@ jobs:
       - name: Check E2E basic compose
         run: |
           docker compose -f "$CI_BUILD_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
-          docker compose -f "$CI_BUILD_COMPOSE_E2E_BASIC_FILE"
+          docker compose -f "$CI_BUILD_COMPOSE_E2E_BASIC_FILE" down
 
       - name: Check E2E ULCL compose
         run: |
