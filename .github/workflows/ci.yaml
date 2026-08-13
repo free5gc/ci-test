@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches:
+        - main
+  pull_request:
+
+env:
+  FREE5GC_REPO: https://github.com/free5gc/free5gc
+
+jobs:
+  it-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone free5GC
+        run: |
+          rm -rf free5gc
+          git clone -j $(nproc) --recursive $FREE5GC_REPO
+
+      - name: Clean up docker resources
+        run: |
+          docker system prune -a -f
+          docker volume prune -a -f
+
+      - name: Make images
+        run: make
+
+      - name: Run basic tests
+        run: |
+          ./ci-test-it.sh --build --test TestRegistration
+          ./ci-test-it.sh --build --test TestDeregistration
+          ./ci-test-it.sh --build --test TestGUTIRegistration
+          ./ci-test-it.sh --build --test TestEAPAKAPrimeAuthentication
+          ./ci-test-it.sh --build --test TestDuplicateRegistration
+          ./ci-test-it.sh --build --test TestServiceRequest
+          ./ci-test-it.sh --build --test TestPDUSessionReleaseRequest
+          ./ci-test-it.sh --build --test TestNasReroute
+          ./ci-test-it.sh --build --test TestN2Handover
+          ./ci-test-it.sh --build --test TestXnHandover
+          ./ci-test-it.sh --build --test TestPaging
+          ./ci-test-it.sh --build --test TestReSynchronization
+          ./ci-test-it.sh --build --test TestMultiAmfRegistration
+          ./ci-test-it.sh --build --test TestRequestTwoPDUSessions
+
+      - name: Run basic non3gpp tests
+        run: |
+          ./ci-test-it.sh --build --test TestN3iwf
+          ./ci-test-it.sh --build --test TestTngf
+
+      - name: Run basic DC tests
+        run: |
+          ./ci-test-it.sh --build --test TestDC
+          ./ci-test-it.sh --build --test TestDynamicDC
+          ./ci-test-it.sh --build --test TestXnDcHandover
+
+  e2e-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone free5GC
+        run: |
+          rm -rf free5gc
+          git clone -j $(nproc) --recursive $FREE5GC_REPO
+
+      - name: Clean up docker resources
+        run: |
+          docker system prune -a -f
+          docker volume prune -a -f
+
+      - name: Make images
+        run: make
+
+      - name: Run E2E basic tests
+        run: |
+          ./ci-test-e2e-basic.sh --build --test TestRegPduCharging
+
+      - name: Run E2E ULCL tests
+        run: |
+          ./ci-test-e2e-ulcl.sh --build --test TestULCLTrafficInfluence
+          ./ci-test-e2e-ulcl.sh --build --test TestULCLMultiPathUe
