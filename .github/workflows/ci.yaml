@@ -135,11 +135,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Clone free5GC
-        run: |
-          rm -rf free5gc
-          git clone -j $(nproc) --recursive $FREE5GC_REPO
-
       - name: Clean up docker resources
         run: |
           docker system prune -a -f
@@ -190,11 +185,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Clone free5GC
-        run: |
-          rm -rf free5gc
-          git clone -j $(nproc) --recursive $FREE5GC_REPO
 
       - name: Clean up docker resources
         run: |
