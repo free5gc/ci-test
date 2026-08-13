@@ -13,9 +13,9 @@ env:
   BUILD_COMPOSE_E2E_BASIC_FILE: composes/build/docker-compose-e2e-basic.yaml
   BUILD_COMPOSE_E2E_ULCL_FILE: composes/build/docker-compose-e2e-ulcl.yaml
 
-  CI_BUILD_COMPOSE_IT_FILE: composes/docker-compose-ci-it.yaml
-  CI_BUILD_COMPOSE_E2E_BASIC_FILE: composes/docker-compose-ci-e2e-basic.yaml
-  CI_BUILD_COMPOSE_E2E_ULCL_FILE: composes/docker-compose-ci-e2e-ulcl.yaml
+  CI_COMPOSE_IT_FILE: composes/docker-compose-ci-it.yaml
+  CI_COMPOSE_E2E_BASIC_FILE: composes/docker-compose-ci-e2e-basic.yaml
+  CI_COMPOSE_E2E_ULCL_FILE: composes/docker-compose-ci-e2e-ulcl.yaml
 
   TIMEOUT: 300
 
@@ -141,8 +141,8 @@ jobs:
 
       - name: Check compose
         run: |
-          docker compose -f "$CI_BUILD_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
-          docker compose -f "$CI_BUILD_COMPOSE_IT_FILE" down
+          docker compose -f "$CI_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_IT_FILE" down
 
       - name: Run basic tests
         run: |
@@ -194,17 +194,17 @@ jobs:
 
       - name: Check E2E basic compose
         run: |
-          docker compose -f "$CI_BUILD_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
-          docker compose -f "$CI_BUILD_COMPOSE_E2E_BASIC_FILE" down
-
-      - name: Check E2E ULCL compose
-        run: |
-          docker compose -f "$CI_BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
-          docker compose -f "$CI_BUILD_COMPOSE_E2E_ULCL_FILE" down
+          docker compose -f "$CI_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_E2E_BASIC_FILE" down
 
       - name: Run E2E basic tests
         run: |
           ./ci-test-e2e-basic.sh --test TestRegPduCharging
+
+      - name: Check E2E ULCL compose
+        run: |
+          docker compose -f "$CI_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_E2E_ULCL_FILE" down
 
       - name: Run E2E ULCL tests
         run: |
