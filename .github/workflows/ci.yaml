@@ -145,9 +145,6 @@ jobs:
           docker system prune -a -f
           docker volume prune -a -f
 
-      - name: Make images
-        run: make
-
       - name: Check compose
         run: |
           docker compose -f "$CI_BUILD_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
@@ -203,9 +200,6 @@ jobs:
         run: |
           docker system prune -a -f
           docker volume prune -a -f
-
-      - name: Make images
-        run: make
 
       - name: Check compose
         run: |
