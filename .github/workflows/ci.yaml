@@ -9,6 +9,12 @@ on:
 env:
   FREE5GC_REPO: https://github.com/free5gc/free5gc
 
+  BUILD_COMPOSE_IT_FILE: composes/build/docker-compose-it-basic.yaml
+  BUILD_COMPOSE_E2E_BASIC_FILE: composes/build/docker-compose-e2e-basic.yaml
+  BUILD_COMPOSE_E2E_ULCL_FILE: composes/build/docker-compose-e2e-ulcl.yaml
+
+  BUILD_TIMEOUT: 300
+
 jobs:
   it-test:
     runs-on: [self-hosted, linux, x64]
@@ -35,6 +41,11 @@ jobs:
 
       - name: Make images
         run: make
+
+      - name: Check compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$BUILD_TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_IT_FILE" down
 
       - name: Run basic tests
         run: |
@@ -86,6 +97,14 @@ jobs:
         run: |
           docker system prune -a -f
           docker volume prune -a -f
+
+      - name: Check compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$BUILD_TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" down
+
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$BUILD_TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" down
 
       - name: Make images
         run: make
