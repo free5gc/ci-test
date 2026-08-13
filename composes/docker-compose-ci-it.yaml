@@ -305,7 +305,7 @@ services:
   it:
     container_name: it
     build:
-      context: ../..
+      context: ..
       dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"

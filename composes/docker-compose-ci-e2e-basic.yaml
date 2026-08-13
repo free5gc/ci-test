@@ -267,7 +267,7 @@ services:
   ue:
     container_name: ue
     build:
-      context: ../..
+      context: ..
       dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
