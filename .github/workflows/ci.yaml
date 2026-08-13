@@ -72,7 +72,7 @@ jobs:
         run: |
           ./ci-test-it.sh --build --test TestDC
           ./ci-test-it.sh --build --test TestDynamicDC
-          ./ci-test-it.sh --build --test 
+          ./ci-test-it.sh --build --test TestXnDcHandover
           
       - name: Cleanup docker resources
         if: always()
