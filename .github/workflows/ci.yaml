@@ -16,7 +16,7 @@ env:
   BUILD_TIMEOUT: 300
 
 jobs:
-  it-test:
+  basic-test:
     runs-on: [self-hosted, linux, x64]
 
     steps:
