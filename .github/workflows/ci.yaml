@@ -38,11 +38,6 @@ jobs:
           rm -rf free5gc
           git clone -j $(nproc) --recursive $FREE5GC_REPO
 
-      - name: Clean up docker resources
-        run: |
-          docker system prune -a -f
-          docker volume prune -a -f
-
       - name: Make images
         run: make
 
@@ -77,7 +72,14 @@ jobs:
         run: |
           ./ci-test-it.sh --build --test TestDC
           ./ci-test-it.sh --build --test TestDynamicDC
-          ./ci-test-it.sh --build --test TestXnDcHandover
+          ./ci-test-it.sh --build --test 
+          
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
 
   e2e-test:
     runs-on: [self-hosted, linux, x64]
@@ -96,11 +98,6 @@ jobs:
         run: |
           rm -rf free5gc
           git clone -j $(nproc) --recursive $FREE5GC_REPO
-
-      - name: Clean up docker resources
-        run: |
-          docker system prune -a -f
-          docker volume prune -a -f
 
       - name: Make images
         run: make
@@ -122,6 +119,13 @@ jobs:
           ./ci-test-e2e-ulcl.sh --build --test TestULCLTrafficInfluence
           ./ci-test-e2e-ulcl.sh --build --test TestULCLMultiPathUe
 
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
+
   ci-basic-test:
     runs-on: [self-hosted, linux, x64]
 
@@ -134,11 +138,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Clean up docker resources
-        run: |
-          docker system prune -a -f
-          docker volume prune -a -f
 
       - name: Check compose
         run: |
@@ -173,6 +172,13 @@ jobs:
           ./ci-test-it.sh --test TestDynamicDC
           ./ci-test-it.sh --test TestXnDcHandover
 
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
+
   ci-e2e-test:
     runs-on: [self-hosted, linux, x64]
 
@@ -185,11 +191,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Clean up docker resources
-        run: |
-          docker system prune -a -f
-          docker volume prune -a -f
 
       - name: Check E2E basic compose
         run: |
@@ -209,3 +210,10 @@ jobs:
         run: |
           ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence
           ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe
+
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
