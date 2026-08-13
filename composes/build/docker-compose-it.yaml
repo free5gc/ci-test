@@ -350,7 +350,8 @@ services:
   it:
     container_name: it
     build:
-      context: ../../dockerfiles/ci
+      context: ../..
+      dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
     command: ["sh", "-c", "ip addr add 10.100.200.51/24 dev eth0 && tail -f /dev/null"]

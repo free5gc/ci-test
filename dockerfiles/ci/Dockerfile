@@ -19,3 +19,10 @@ RUN apt-get update && \
 
 # Copy free-ran-ue binary
 COPY --from=fru /free-ran-ue/free-ran-ue /free-ran-ue/free-ran-ue
+
+# Pre-download Go module dependencies into the image so `go test` doesn't
+# re-fetch them on every container start. test/goTest is bind-mounted over
+# /root/test at runtime, but the module cache (GOMODCACHE, default
+# /root/go/pkg/mod) lives outside that path, so it survives the mount.
+COPY test/goTest/go.mod test/goTest/go.sum /root/test/goTest/
+RUN cd /root/test/goTest && go mod download
