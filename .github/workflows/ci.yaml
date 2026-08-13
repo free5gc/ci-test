@@ -102,17 +102,19 @@ jobs:
       - name: Make images
         run: make
 
-      - name: Check compose
+      - name: Check E2E basic compose
         run: |
           docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
           docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" down
 
-          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
-          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" down
-
       - name: Run E2E basic tests
         run: |
           ./ci-test-e2e-basic.sh --build --test TestRegPduCharging
+
+      - name: Check E2E ULCL compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" down
 
       - name: Run E2E ULCL tests
         run: |
