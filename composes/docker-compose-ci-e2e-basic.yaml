@@ -267,7 +267,8 @@ services:
   ue:
     container_name: ue
     build:
-      context: ../dockerfiles/ci
+      context: ..
+      dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]

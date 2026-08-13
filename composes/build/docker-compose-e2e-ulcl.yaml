@@ -454,7 +454,8 @@ services:
   ue-0:
     container_name: ue-0
     build:
-      context: ../../dockerfiles/ci
+      context: ../..
+      dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
@@ -500,7 +501,8 @@ services:
   ue-1:
     container_name: ue-1
     build:
-      context: ../../dockerfiles/ci
+      context: ../..
+      dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
@@ -546,7 +548,8 @@ services:
   ue-2:
     container_name: ue-2
     build:
-      context: ../../dockerfiles/ci
+      context: ../..
+      dockerfile: dockerfiles/ci/Dockerfile
       args:
         DEBUG_TOOLS: "false"
     command: ["tail", "-f", "/dev/null"]
