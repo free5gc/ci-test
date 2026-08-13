@@ -297,6 +297,30 @@ services:
       - free5gc-smf
       - free5gc-upf
 
+  free5gc-tngf: #tngf
+    container_name: tngf
+    build:
+      context: ../../dockerfiles/nf_tngf
+      args:
+        DEBUG_TOOLS: "false"
+    command: ./tngf -c ./config/tngfcfg.yaml
+    volumes:
+      - ../../config/tngfCfg.yaml:/free5gc/config/tngfcfg.yaml
+      - ../../cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+        ipv4_address: 10.100.200.17
+        aliases:
+          - tngf.free5gc.org
+    depends_on:
+      - free5gc-amf
+      - free5gc-smf
+      - free5gc-upf
+
   free5gc-webui: # webui
     container_name: webui
     build:
