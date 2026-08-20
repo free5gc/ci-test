@@ -48,17 +48,17 @@ UserLoc :
 						" SMacroNGeNB-34B89" indicates a Short Macro NG-eNB ID with value 0x34B89.
 */
 //Success Test
-func GetAMreqdata() models.PcfAmPolicyControlPolicyAssociationRequest {
+func GetAMreqdata() models.Pcf_AMPolCtrl_PolicyAssociationRequest {
 	timeNow := time.Now()
 	//d := time.Date(2019, 7, 5, 12, 30, 0, 0, time.UTC)
-	amCreateReqData := models.PcfAmPolicyControlPolicyAssociationRequest{
+	amCreateReqData := models.Pcf_AMPolCtrl_PolicyAssociationRequest{
 		NotificationUri: "http://127.0.0.1:29518/namf-callback/v1/am-policy/imsi-208930000007487-1",
 		Supi:            "imsi-208930000007487",
 		SuppFeat:        "1",
 		Pei:             "123456789123456",
 		RatType:         models.RatType_NR,
 		Rfsp:            123,
-		AccessType:      models.AccessType__3_GPP_ACCESS,
+		AccessType:      models.AccessType_3_GPP_ACCESS,
 		ServAreaRes: &models.ServiceAreaRestriction{
 			RestrictionType: "ALLOWED_AREAS",
 			Areas: []models.Area{
@@ -129,11 +129,11 @@ func GetAMreqdata() models.PcfAmPolicyControlPolicyAssociationRequest {
 	}
 	return amCreateReqData
 }
-func GetAMUpdateReqData() models.PcfAmPolicyControlPolicyAssociationUpdateRequest {
-	amUpdateReqData := models.PcfAmPolicyControlPolicyAssociationUpdateRequest{
-		Triggers: []models.PcfAmPolicyControlRequestTrigger{
-			models.PcfAmPolicyControlRequestTrigger_RFSP_CH,
-			models.PcfAmPolicyControlRequestTrigger_SERV_AREA_CH,
+func GetAMUpdateReqData() models.Pcf_AMPolCtrl_PolicyAssociationUpdateRequest {
+	amUpdateReqData := models.Pcf_AMPolCtrl_PolicyAssociationUpdateRequest{
+		Triggers: []models.Pcf_AMPolCtrl_RequestTrigger{
+			models.Pcf_AMPolCtrl_RequestTrigger_RFSP_CH,
+			models.Pcf_AMPolCtrl_RequestTrigger_SERV_AREA_CH,
 		},
 		ServAreaRes: &models.ServiceAreaRestriction{
 			RestrictionType: "ALLOWED_AREAS",
@@ -167,13 +167,13 @@ func GetAMUpdateReqData() models.PcfAmPolicyControlPolicyAssociationUpdateReques
 
 // -------------------------------------------------------------------------------------------------
 // Fail Test (Create part)
-func GetamCreatefailnotifyURIData() models.PcfAmPolicyControlPolicyAssociationRequest {
+func GetamCreatefailnotifyURIData() models.Pcf_AMPolCtrl_PolicyAssociationRequest {
 	//d := time.Date(2019, 7, 5, 12, 30, 0, 0, time.UTC)
 	amCreatefailnotifyURIData := GetAMreqdata()
 	amCreatefailnotifyURIData.NotificationUri = ""
 	return amCreatefailnotifyURIData
 }
-func GetamCreatefailsupiData() models.PcfAmPolicyControlPolicyAssociationRequest {
+func GetamCreatefailsupiData() models.Pcf_AMPolCtrl_PolicyAssociationRequest {
 	//d := time.Date(2019, 7, 5, 12, 30, 0, 0, time.UTC)
 	amCreatefailnotifysupiData := GetAMreqdata()
 	amCreatefailnotifysupiData.Supi = "dadfasdfasd"

@@ -4,57 +4,57 @@ import (
 	"github.com/free5gc/openapi/models"
 )
 
-func GetPostAppSessionsData_Normal() models.AppSessionContext {
-	PostAppSessionsData := models.AppSessionContext{
-		AscReqData: &models.AppSessionContextReqData{
-			AfRoutReq: &models.AfRoutingRequirement{},
+func GetPostAppSessionsData_Normal() models.Pcf_PolAuth_AppSessionContext {
+	PostAppSessionsData := models.Pcf_PolAuth_AppSessionContext{
+		AscReqData: &models.Pcf_PolAuth_AppSessionContextReqData{
+			AfRoutReq: &models.Pcf_PolAuth_AfRoutingRequirement{},
 			Dnn:       "internet",
 			SliceInfo: &models.Snssai{
 				Sst: 1,
 				Sd:  "010203",
 			},
-			MedComponents: map[string]models.MediaComponent{
+			MedComponents: map[string]models.Pcf_PolAuth_MediaComponent{
 				"1": {
 					MedCompN: 1,
 					MarBwDl:  "400 Mbps",
 					MarBwUl:  "400 Mbps",
 					MirBwDl:  "20 Mbps",
 					MirBwUl:  "20 Mbps",
-					MedType:  models.MediaType_AUDIO,
-					FStatus:  models.FlowStatus_ENABLED,
-					MedSubComps: map[string]models.MediaSubComponent{
+					MedType:  models.Pcf_PolAuth_MediaType_AUDIO,
+					FStatus:  models.Pcf_PolAuth_FlowStatus_ENABLED,
+					MedSubComps: map[string]models.Pcf_PolAuth_MediaSubComponent{
 						"1": {
 							FNum:    1,
 							FDescs:  []string{"permit out ip from 127.0.0.1 to 45.45.0.2"},
-							FStatus: models.FlowStatus_ENABLED,
+							FStatus: models.Pcf_PolAuth_FlowStatus_ENABLED,
 						},
 					},
 				},
 			},
-			EvSubsc: &models.PcfPolicyAuthorizationEventsSubscReqData{
-				Events: []models.AfEventSubscription{
+			EvSubsc: &models.Pcf_PolAuth_EventsSubscReqData{
+				Events: []models.Pcf_PolAuth_AfEventSubscription{
 					{
-						Event:       models.PcfPolicyAuthorizationAfEvent_ACCESS_TYPE_CHANGE,
-						NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+						Event:       models.Pcf_PolAuth_AfEvent_ACCESS_TYPE_CHANGE,
+						NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 					},
 					{
-						Event: models.PcfPolicyAuthorizationAfEvent_QOS_NOTIF,
+						Event: models.Pcf_PolAuth_AfEvent_QOS_NOTIF,
 					},
 					{
-						Event: models.PcfPolicyAuthorizationAfEvent_PLMN_CHG,
+						Event: models.Pcf_PolAuth_AfEvent_PLMN_CHG,
 					},
 					{
-						Event: models.PcfPolicyAuthorizationAfEvent_FAILED_RESOURCES_ALLOCATION,
+						Event: models.Pcf_PolAuth_AfEvent_FAILED_RESOURCES_ALLOCATION,
 					},
 					{
-						Event: models.PcfPolicyAuthorizationAfEvent_SUCCESSFUL_RESOURCES_ALLOCATION,
+						Event: models.Pcf_PolAuth_AfEvent_SUCCESSFUL_RESOURCES_ALLOCATION,
 					},
 					{
-						Event: models.PcfPolicyAuthorizationAfEvent_USAGE_REPORT,
+						Event: models.Pcf_PolAuth_AfEvent_USAGE_REPORT,
 					},
 				},
 				NotifUri: "https://127.0.0.1:12345",
-				UsgThres: &models.UsageThreshold{
+				UsgThres: &models.Nef_UsageThreshold{
 					Duration:    100,
 					TotalVolume: 30000,
 				},
@@ -68,9 +68,9 @@ func GetPostAppSessionsData_Normal() models.AppSessionContext {
 	return PostAppSessionsData
 }
 
-func GetPostAppSessionsData_AFInfluenceOnTrafficRouting() models.AppSessionContext {
-	PostAppSessionsData := models.AppSessionContext{
-		AscReqData: &models.AppSessionContextReqData{
+func GetPostAppSessionsData_AFInfluenceOnTrafficRouting() models.Pcf_PolAuth_AppSessionContext {
+	PostAppSessionsData := models.Pcf_PolAuth_AppSessionContext{
+		AscReqData: &models.Pcf_PolAuth_AppSessionContextReqData{
 			AfAppId:  "edge",
 			Dnn:      "internet",
 			SuppFeat: "03",
@@ -79,14 +79,14 @@ func GetPostAppSessionsData_AFInfluenceOnTrafficRouting() models.AppSessionConte
 			SliceInfo: &models.Snssai{
 				Sst: 1, Sd: "fedcba",
 			},
-			AfRoutReq: &models.AfRoutingRequirement{
+			AfRoutReq: &models.Pcf_PolAuth_AfRoutingRequirement{
 				AppReloc: false,
-				UpPathChgSub: &models.UpPathChgEvent{
+				UpPathChgSub: &models.Pcf_SMPolCtrl_UpPathChgEvent{
 					DnaiChgType:     models.DnaiChangeType_LATE,
 					NotificationUri: "http://127.0.0.100:8000/nnef-callback/v1/traffic-influence/edge",
 					NotifCorreId:    "1234",
 				},
-				RouteToLocs: []*models.RouteToLocation{
+				RouteToLocs: []models.RouteToLocation{
 					{
 						Dnai:        "edge",
 						RouteProfId: "MEC1",
@@ -100,73 +100,73 @@ func GetPostAppSessionsData_AFInfluenceOnTrafficRouting() models.AppSessionConte
 	return PostAppSessionsData
 }
 
-func GetPostAppSessionsData_Flow3() models.AppSessionContext {
+func GetPostAppSessionsData_Flow3() models.Pcf_PolAuth_AppSessionContext {
 	PostAppSessionsData := GetPostAppSessionsData_Normal()
 	medComp := PostAppSessionsData.AscReqData.MedComponents["1"]
-	medComp.MedSubComps["2"] = models.MediaSubComponent{
+	medComp.MedSubComps["2"] = models.Pcf_PolAuth_MediaSubComponent{
 		FNum:    2,
 		FDescs:  []string{"permit in ip from 127.0.0.2 to 45.45.0.2"},
 		MarBwDl: "200 Mbps",
-		FStatus: models.FlowStatus_ENABLED,
+		FStatus: models.Pcf_PolAuth_FlowStatus_ENABLED,
 	}
-	medComp.MedSubComps["3"] = models.MediaSubComponent{
+	medComp.MedSubComps["3"] = models.Pcf_PolAuth_MediaSubComponent{
 		FNum:    3,
 		FDescs:  []string{"permit inout ip from 127.0.0.3 to 45.45.0.2"},
 		MarBwDl: "500 Mbps",
-		FStatus: models.FlowStatus_ENABLED,
+		FStatus: models.Pcf_PolAuth_FlowStatus_ENABLED,
 	}
 	PostAppSessionsData.AscReqData.MedComponents["1"] = medComp
 	return PostAppSessionsData
 }
 
-func GetPostAppSessionsData_403Forbidden() models.AppSessionContext {
+func GetPostAppSessionsData_403Forbidden() models.Pcf_PolAuth_AppSessionContext {
 	PostAppSessionsData := GetPostAppSessionsData_Normal()
 	medComp := PostAppSessionsData.AscReqData.MedComponents["1"]
-	medComp.MedSubComps["1"] = models.MediaSubComponent{
+	medComp.MedSubComps["1"] = models.Pcf_PolAuth_MediaSubComponent{
 		FNum:    1,
 		FDescs:  []string{"permit in ip from 127.0.0.4 to 45.45.0.2"},
-		FStatus: models.FlowStatus_ENABLED,
+		FStatus: models.Pcf_PolAuth_FlowStatus_ENABLED,
 	}
 	medComp.MirBwUl = "500 Mbps"
 	PostAppSessionsData.AscReqData.MedComponents["1"] = medComp
 	return PostAppSessionsData
 }
 
-func GetPostAppSessionsData_400() models.AppSessionContext {
+func GetPostAppSessionsData_400() models.Pcf_PolAuth_AppSessionContext {
 	PostAppSessionsData := GetPostAppSessionsData_Normal()
 	PostAppSessionsData.AscReqData.MedComponents = nil
 	return PostAppSessionsData
 }
 
-func GetPostAppSessionsData_NoEvent() models.AppSessionContext {
+func GetPostAppSessionsData_NoEvent() models.Pcf_PolAuth_AppSessionContext {
 	PostAppSessionsData := GetPostAppSessionsData_Normal()
 	PostAppSessionsData.AscReqData.EvSubsc = nil
 	return PostAppSessionsData
 }
 
-func GetDeleteAppSession204Data() models.AppSessionContext {
-	DeleteAppSession204Data := models.AppSessionContext{
-		AscReqData: &models.AppSessionContextReqData{
+func GetDeleteAppSession204Data() models.Pcf_PolAuth_AppSessionContext {
+	DeleteAppSession204Data := models.Pcf_PolAuth_AppSessionContext{
+		AscReqData: &models.Pcf_PolAuth_AppSessionContextReqData{
 			Supi:     "123",
 			NotifUri: "https://127.0.0.1:12345",
 			SuppFeat: "0",
 		},
-		AscRespData: &models.AppSessionContextRespData{},
-		EvsNotif:    &models.PcfPolicyAuthorizationEventsNotification{},
+		AscRespData: &models.Pcf_PolAuth_AppSessionContextRespData{},
+		EvsNotif:    &models.Pcf_PolAuth_EventsNotification{},
 	}
 	return DeleteAppSession204Data
 }
 
-func GetUpdateEventsSubsc201Data() models.PcfPolicyAuthorizationEventsSubscReqData {
-	UpdateEventsSubsc201Data := models.PcfPolicyAuthorizationEventsSubscReqData{
-		Events: []models.AfEventSubscription{
+func GetUpdateEventsSubsc201Data() models.Pcf_PolAuth_EventsSubscReqData {
+	UpdateEventsSubsc201Data := models.Pcf_PolAuth_EventsSubscReqData{
+		Events: []models.Pcf_PolAuth_AfEventSubscription{
 			{
-				Event:       models.PcfPolicyAuthorizationAfEvent_ACCESS_TYPE_CHANGE,
-				NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+				Event:       models.Pcf_PolAuth_AfEvent_ACCESS_TYPE_CHANGE,
+				NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 			},
 			{
-				Event:       models.PcfPolicyAuthorizationAfEvent_PLMN_CHG,
-				NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+				Event:       models.Pcf_PolAuth_AfEvent_PLMN_CHG,
+				NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 			},
 		},
 		NotifUri: "https://127.0.0.1:12345",
@@ -174,12 +174,12 @@ func GetUpdateEventsSubsc201Data() models.PcfPolicyAuthorizationEventsSubscReqDa
 	return UpdateEventsSubsc201Data
 }
 
-func GetUpdateEventsSubsc200Data() models.PcfPolicyAuthorizationEventsSubscReqData {
-	UpdateEventsSubsc200Data := models.PcfPolicyAuthorizationEventsSubscReqData{
-		Events: []models.AfEventSubscription{
+func GetUpdateEventsSubsc200Data() models.Pcf_PolAuth_EventsSubscReqData {
+	UpdateEventsSubsc200Data := models.Pcf_PolAuth_EventsSubscReqData{
+		Events: []models.Pcf_PolAuth_AfEventSubscription{
 			{
-				Event:       models.PcfPolicyAuthorizationAfEvent_PLMN_CHG,
-				NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+				Event:       models.Pcf_PolAuth_AfEvent_PLMN_CHG,
+				NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 			},
 		},
 		NotifUri: "https://127.0.0.1:12345",
@@ -187,12 +187,12 @@ func GetUpdateEventsSubsc200Data() models.PcfPolicyAuthorizationEventsSubscReqDa
 	return UpdateEventsSubsc200Data
 }
 
-func GetUpdateEventsSubsc204Data() models.PcfPolicyAuthorizationEventsSubscReqData {
-	UpdateEventsSubsc204Data := models.PcfPolicyAuthorizationEventsSubscReqData{
-		Events: []models.AfEventSubscription{
+func GetUpdateEventsSubsc204Data() models.Pcf_PolAuth_EventsSubscReqData {
+	UpdateEventsSubsc204Data := models.Pcf_PolAuth_EventsSubscReqData{
+		Events: []models.Pcf_PolAuth_AfEventSubscription{
 			{
-				Event:       models.PcfPolicyAuthorizationAfEvent_SUCCESSFUL_RESOURCES_ALLOCATION,
-				NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+				Event:       models.Pcf_PolAuth_AfEvent_SUCCESSFUL_RESOURCES_ALLOCATION,
+				NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 			},
 		},
 		NotifUri: "https://127.0.0.1:12345",
@@ -200,9 +200,9 @@ func GetUpdateEventsSubsc204Data() models.PcfPolicyAuthorizationEventsSubscReqDa
 	return UpdateEventsSubsc204Data
 }
 
-func GetUpdateEventsSubsc400Data() models.PcfPolicyAuthorizationEventsSubscReqData {
-	UpdateEventsSubsc400Data := models.PcfPolicyAuthorizationEventsSubscReqData{
-		UsgThres: &models.UsageThreshold{
+func GetUpdateEventsSubsc400Data() models.Pcf_PolAuth_EventsSubscReqData {
+	UpdateEventsSubsc400Data := models.Pcf_PolAuth_EventsSubscReqData{
+		UsgThres: &models.Nef_UsageThreshold{
 			Duration:       0,
 			TotalVolume:    0,
 			DownlinkVolume: 0,
@@ -211,11 +211,11 @@ func GetUpdateEventsSubsc400Data() models.PcfPolicyAuthorizationEventsSubscReqDa
 	return UpdateEventsSubsc400Data
 }
 
-func GetModAppSession200Data() models.AppSessionContextUpdateData {
-	ModAppSession200Data := models.AppSessionContextUpdateData{
-		AfRoutReq: &models.AfRoutingRequirementRm{
+func GetModAppSession200Data() models.Pcf_PolAuth_AppSessionContextUpdateData {
+	ModAppSession200Data := models.Pcf_PolAuth_AppSessionContextUpdateData{
+		AfRoutReq: &models.Pcf_PolAuth_AfRoutingRequirementRm{
 			AppReloc: true,
-			RouteToLocs: []*models.RouteToLocation{
+			RouteToLocs: []models.RouteToLocation{
 				{
 					Dnai: "Dnai",
 					RouteInfo: &models.RouteInformation{
@@ -226,35 +226,35 @@ func GetModAppSession200Data() models.AppSessionContextUpdateData {
 					RouteProfId: "RouteProfId",
 				},
 			},
-			UpPathChgSub: &models.UpPathChgEvent{},
+			UpPathChgSub: &models.Pcf_SMPolCtrl_UpPathChgEvent{},
 		},
-		EvSubsc: &models.PcfPolicyAuthorizationEventsSubscReqDataRm{
+		EvSubsc: &models.Pcf_PolAuth_EventsSubscReqDataRm{
 			NotifUri: "EvSubsc_NotifUri",
-			Events: []models.AfEventSubscription{
+			Events: []models.Pcf_PolAuth_AfEventSubscription{
 				{
-					Event:       models.PcfPolicyAuthorizationAfEvent_ACCESS_TYPE_CHANGE,
-					NotifMethod: models.AfNotifMethod_EVENT_DETECTION,
+					Event:       models.Pcf_PolAuth_AfEvent_ACCESS_TYPE_CHANGE,
+					NotifMethod: models.Pcf_PolAuth_AfNotifMethod_EVENT_DETECTION,
 				},
 			},
-			UsgThres: &models.UsageThresholdRm{
+			UsgThres: &models.Nef_UsageThresholdRm{
 				Duration:    10,
 				TotalVolume: 10,
 			},
 		},
-		MedComponents: map[string]*models.MediaComponentRm{
+		MedComponents: map[string]*models.Pcf_PolAuth_MediaComponentRm{
 			"1": {
 				MedCompN: 1,
 				MarBwDl:  "40 Mbps",
 				MarBwUl:  "40 Mbps",
 				MirBwDl:  "20 Mbps",
 				MirBwUl:  "20 Mbps",
-				MedType:  models.MediaType_AUDIO,
-				FStatus:  models.FlowStatus_ENABLED,
-				MedSubComps: map[string]*models.MediaSubComponentRm{
+				MedType:  models.Pcf_PolAuth_MediaType_AUDIO,
+				FStatus:  models.Pcf_PolAuth_FlowStatus_ENABLED,
+				MedSubComps: map[string]*models.Pcf_PolAuth_MediaSubComponentRm{
 					"1": {
 						FNum:    1,
 						FDescs:  []string{"permit out ip from 127.0.0.9 to 45.45.0.2"},
-						FStatus: models.FlowStatus_ENABLED,
+						FStatus: models.Pcf_PolAuth_FlowStatus_ENABLED,
 					},
 				},
 			},
@@ -263,7 +263,7 @@ func GetModAppSession200Data() models.AppSessionContextUpdateData {
 	return ModAppSession200Data
 }
 
-func GetModAppSession403Data() models.AppSessionContextUpdateData {
-	ModAppSession403Data := models.AppSessionContextUpdateData{}
+func GetModAppSession403Data() models.Pcf_PolAuth_AppSessionContextUpdateData {
+	ModAppSession403Data := models.Pcf_PolAuth_AppSessionContextUpdateData{}
 	return ModAppSession403Data
 }

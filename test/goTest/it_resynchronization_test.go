@@ -6,12 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/free5gc/nas"
-	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
-	"github.com/free5gc/nas/security"
-	"github.com/free5gc/ngap"
-	"github.com/free5gc/ngap/ngapType"
+	nasIE "github.com/free5gc/nas/ie"
+	nasMessage "github.com/free5gc/nas/message"
+	ngapMessage "github.com/free5gc/ngap/message"
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/milenage"
 	"github.com/stretchr/testify/assert"
@@ -40,22 +37,20 @@ func TestReSynchronization(t *testing.T) {
 	// receive NGSetupResponse
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// New UE
-	ue := NewRanUeContext(UE_IMSI, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2, models.AccessType__3_GPP_ACCESS)
+	ue := NewRanUeContext(UE_IMSI, 1, nasMessage.AlgCiphering128NEA0, nasMessage.AlgIntegrity128NIA2, models.AccessType_3_GPP_ACCESS)
 	ue.AmfUeNgapId = 1
 	ue.AuthenticationSubs = GetAuthSubscription(UE_K, UE_OPC, "")
 
 	// send InitialUeMessage(Registration Request)
-	mobileIdentity5GS := nasType.MobileIdentity5GS{
-		Len:    13, // suci
-		Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10},
-	}
+	mobileIdentity5GS := MobileIdentity5GS(
+		[]uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10})
 	ueSecurityCapability := ue.GetUESecurityCapability()
 	registrationRequest := GetRegistrationRequest(
-		nasMessage.RegistrationType5GSInitialRegistration, mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
+		nasIE.RegType_InitialReg, mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
 	sendMsg, err = GetInitialUEMessage(ue.RanUeNgapId, registrationRequest, "")
 	assert.Nil(t, err)
 	_, err = n2Conn.Write(sendMsg)
@@ -64,13 +59,12 @@ func TestReSynchronization(t *testing.T) {
 	// receive NAS Authentication Request
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapMsg, err := ngap.Decoder(recvMsg[:n])
+	ngapMsg, err := ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
-	nasPdu := GetNasPdu(ue, ngapMsg.InitiatingMessage.Value.DownlinkNASTransport)
+	nasPdu := GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.NotNil(t, nasPdu.GmmMessage, "GMM message is nil")
-	require.Equal(t, nasPdu.GmmHeader.GetMessageType(), nas.MsgTypeAuthenticationRequest,
+	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
 		"Received wrong GMM message. Expected Authentication Request.")
 
 	// gen AK
@@ -78,7 +72,7 @@ func TestReSynchronization(t *testing.T) {
 	assert.Nil(t, err)
 	OPC, err := hex.DecodeString(ue.AuthenticationSubs.EncOpcKey)
 	assert.Nil(t, err)
-	rand := nasPdu.AuthenticationRequest.GetRANDValue()
+	rand := nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 
 	// Based on TS 33.105, clause 5.1.1.3. The SQN_ms is a SQN value managed by the mobile station (or UE).
 	// Whenever the UE finds that SQN_ms is not in synced with SQN sent by the AMF, it start the
@@ -98,7 +92,7 @@ func TestReSynchronization(t *testing.T) {
 	assert.Nil(t, err)
 
 	// send NAS Authentication Failure (Synch failure)
-	pdu := GetAuthenticationFailure(nasMessage.Cause5GMMSynchFailure, AUTS)
+	pdu := GetAuthenticationFailure(nasIE.Cause5GMM_SynchFailure, AUTS)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
 	_, err = n2Conn.Write(sendMsg)
@@ -107,19 +101,18 @@ func TestReSynchronization(t *testing.T) {
 	// receive NAS Authentication Request (re-synchronized)
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapMsg, err = ngap.Decoder(recvMsg[:n])
+	ngapMsg, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
-	nasPdu = GetNasPdu(ue, ngapMsg.InitiatingMessage.Value.DownlinkNASTransport)
+	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.NotNil(t, nasPdu.GmmMessage, "GMM message is nil")
-	require.Equal(t, nasPdu.GmmHeader.GetMessageType(), nas.MsgTypeAuthenticationRequest,
+	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
 		"Received wrong GMM message. Expected Authentication Request.")
-	rand = nasPdu.AuthenticationRequest.GetRANDValue()
+	rand = nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 
 	// After re-synchronization, check if the SQN is updated
 	// Use AK (from f5, not f5*) to de-conceal SQN from AUTN
-	autn := nasPdu.AuthenticationRequest.GetAUTN()
+	autn := nasPdu.(*nasMessage.AuthReq).AuthParamAUTN5GAuthChlg.Autn
 	SQN, _, _, _, _, err := milenage.GenerateKeysWithAUTN(OPC, K, rand[:], autn[:])
 	assert.Nil(t, err)
 	ue.AuthenticationSubs.SequenceNumber.Sqn = hex.EncodeToString(SQN)
@@ -135,20 +128,19 @@ func TestReSynchronization(t *testing.T) {
 	// receive NAS Security Mode Command
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapPdu, err := ngap.Decoder(recvMsg[:n])
+	ngapPdu, err := ngapMessage.Parse(recvMsg[:n])
 	require.Nil(t, err)
 	require.NotNil(t, ngapPdu)
-	nasPdu = GetNasPdu(ue, ngapPdu.InitiatingMessage.Value.DownlinkNASTransport)
+	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.NotNil(t, nasPdu.GmmMessage, "GMM message is nil")
-	require.Equal(t, nasPdu.GmmHeader.GetMessageType(), nas.MsgTypeSecurityModeCommand,
+	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd,
 		"Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
-	registrationRequestWith5GMM := GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequestWith5GMM := GetRegistrationRequest(nasIE.RegType_InitialReg,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = GetSecurityModeComplete(registrationRequestWith5GMM)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCipheredWithNew5gNasSecCtx, true, true)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -158,7 +150,7 @@ func TestReSynchronization(t *testing.T) {
 	// receive ngap Initial Context Setup Request
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// send ngap Initial Context Setup Response
@@ -169,7 +161,7 @@ func TestReSynchronization(t *testing.T) {
 
 	// send NAS Registration Complete
 	pdu = GetRegistrationComplete(nil)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -179,10 +171,10 @@ func TestReSynchronization(t *testing.T) {
 	// receive UE Configuration Update Command (equivalent to recvUeConfigUpdateCmd in reference test)
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapPdu, err = ngap.Decoder(recvMsg[:n])
+	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.Present, ngapType.NGAPPDUPresentInitiatingMessage, "Not NGAPPDUPresentInitiatingMessage")
-	assert.Equal(t, ngapPdu.InitiatingMessage.ProcedureCode.Value, ngapType.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -191,8 +183,8 @@ func TestReSynchronization(t *testing.T) {
 		Sst: SST,
 		Sd:  SD,
 	}
-	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasIE.ReqType_InitialReq, "internet", &sNssai)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -202,7 +194,7 @@ func TestReSynchronization(t *testing.T) {
 	// receive NGAP PDU Session Resource Setup Request (DL NAS transport / PDU Session Establishment Accept)
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// send NGAP PDU Session Resource Setup Response

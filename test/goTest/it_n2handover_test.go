@@ -6,12 +6,9 @@ import (
 
 	"github.com/mohae/deepcopy"
 
-	"github.com/free5gc/nas"
-	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
-	"github.com/free5gc/nas/security"
-	"github.com/free5gc/ngap"
-	"github.com/free5gc/ngap/ngapType"
+	nasIE "github.com/free5gc/nas/ie"
+	nasMessage "github.com/free5gc/nas/message"
+	ngapMessage "github.com/free5gc/ngap/message"
 	"github.com/free5gc/openapi/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,7 +36,7 @@ func TestN2Handover(t *testing.T) {
 	// source RAN receive NGSetupResponse
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	time.Sleep(10 * time.Millisecond)
@@ -58,23 +55,21 @@ func TestN2Handover(t *testing.T) {
 	// target RAN receive NGSetupResponse
 	n, err = n2Conn2.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// New UE
-	ue := NewRanUeContext(UE_IMSI, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
-		models.AccessType__3_GPP_ACCESS)
+	ue := NewRanUeContext(UE_IMSI, 1, nasMessage.AlgCiphering128NEA0, nasMessage.AlgIntegrity128NIA2,
+		models.AccessType_3_GPP_ACCESS)
 	ue.AmfUeNgapId = 1
 	ue.AuthenticationSubs = GetAuthSubscription(UE_K, UE_OPC, "")
 
 	// send InitialUeMessage(Registration Request)
-	mobileIdentity5GS := nasType.MobileIdentity5GS{
-		Len:    13, // suci
-		Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10},
-	}
+	mobileIdentity5GS := MobileIdentity5GS(
+		[]uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10})
 	ueSecurityCapability := ue.GetUESecurityCapability()
 	registrationRequest := GetRegistrationRequest(
-		nasMessage.RegistrationType5GSInitialRegistration, mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
+		nasIE.RegType_InitialReg, mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
 	sendMsg, err = GetInitialUEMessage(ue.RanUeNgapId, registrationRequest, "")
 	assert.Nil(t, err)
 	_, err = n2Conn.Write(sendMsg)
@@ -83,16 +78,15 @@ func TestN2Handover(t *testing.T) {
 	// receive NAS Authentication Request
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapMsg, err := ngap.Decoder(recvMsg[:n])
+	ngapMsg, err := ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// Calculate for RES*
-	nasPdu := GetNasPdu(ue, ngapMsg.InitiatingMessage.Value.DownlinkNASTransport)
+	nasPdu := GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.NotNil(t, nasPdu.GmmMessage, "GMM message is nil")
-	require.Equal(t, nasPdu.GmmHeader.GetMessageType(), nas.MsgTypeAuthenticationRequest,
+	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
 		"Received wrong GMM message. Expected Authentication Request.")
-	rand := nasPdu.AuthenticationRequest.GetRANDValue()
+	rand := nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
 
 	// send NAS Authentication Response
@@ -105,20 +99,19 @@ func TestN2Handover(t *testing.T) {
 	// receive NAS Security Mode Command
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapPdu, err := ngap.Decoder(recvMsg[:n])
+	ngapPdu, err := ngapMessage.Parse(recvMsg[:n])
 	require.Nil(t, err)
 	require.NotNil(t, ngapPdu)
-	nasPdu = GetNasPdu(ue, ngapPdu.InitiatingMessage.Value.DownlinkNASTransport)
+	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.NotNil(t, nasPdu.GmmMessage, "GMM message is nil")
-	require.Equal(t, nasPdu.GmmHeader.GetMessageType(), nas.MsgTypeSecurityModeCommand,
+	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd,
 		"Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
-	registrationRequestWith5GMM := GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequestWith5GMM := GetRegistrationRequest(nasIE.RegType_InitialReg,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = GetSecurityModeComplete(registrationRequestWith5GMM)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCipheredWithNew5gNasSecCtx, true, true)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -128,7 +121,7 @@ func TestN2Handover(t *testing.T) {
 	// receive ngap Initial Context Setup Request
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// send ngap Initial Context Setup Response
@@ -139,7 +132,7 @@ func TestN2Handover(t *testing.T) {
 
 	// send NAS Registration Complete
 	pdu = GetRegistrationComplete(nil)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -149,18 +142,18 @@ func TestN2Handover(t *testing.T) {
 	// receive UE Configuration Update Command (equivalent to recvUeConfigUpdateCmd in reference test)
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapPdu, err = ngap.Decoder(recvMsg[:n])
+	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.Present, ngapType.NGAPPDUPresentInitiatingMessage, "Not NGAPPDUPresentInitiatingMessage")
-	assert.Equal(t, ngapPdu.InitiatingMessage.ProcedureCode.Value, ngapType.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
 
 	// send PduSessionEstablishmentRequest
 	sNssai := models.Snssai{
 		Sst: SST,
 		Sd:  SD,
 	}
-	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasIE.ReqType_InitialReq, "internet", &sNssai)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -170,7 +163,7 @@ func TestN2Handover(t *testing.T) {
 	// receive NGAP PDU Session Resource Setup Request (DL NAS transport / PDU Session Establishment Accept)
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// send NGAP PDU Session Resource Setup Response
@@ -194,7 +187,7 @@ func TestN2Handover(t *testing.T) {
 	// target RAN receive ngap Handover Request
 	n, err = n2Conn2.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// target RAN creates a new UE context cloned from the source UE (same security context/counts)
@@ -217,7 +210,7 @@ func TestN2Handover(t *testing.T) {
 	// source RAN receive ngap Handover Command
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// target RAN send ngap Handover Notify
@@ -229,7 +222,7 @@ func TestN2Handover(t *testing.T) {
 	// source RAN receive ngap UE Context Release Command
 	n, err = n2Conn.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// source RAN send ngap UE Context Release Complete
@@ -241,18 +234,15 @@ func TestN2Handover(t *testing.T) {
 
 	// UE send NAS Registration Request (Mobility Registration Update) to target AMF via target RAN
 	// 5G-GUTI is assigned by AMF during registration; verify buffer matches AMF assignment if test fails
-	mobileIdentity5GS = nasType.MobileIdentity5GS{
-		Len:    11, // 5g-guti
-		Buffer: []uint8{0xf2, 0x02, 0xf8, 0x39, 0xca, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x01},
-	}
+	mobileIdentity5GS = MobileIdentity5GS(
+		[]uint8{0xf2, 0x02, 0xf8, 0x39, 0xca, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x01})
 
-	uplinkDataStatus := nasType.NewUplinkDataStatus(nasMessage.RegistrationRequestUplinkDataStatusType)
-	uplinkDataStatus.SetLen(2)
-	uplinkDataStatus.SetPSI10(1)
+	uplinkDataStatus := &nasIE.UplinkDataStatus{}
+	uplinkDataStatus.Psi.PSI[10] = true
 	ueSecurityCapability = targetUe.GetUESecurityCapability()
-	pdu = GetRegistrationRequest(nasMessage.RegistrationType5GSMobilityRegistrationUpdating,
+	pdu = GetRegistrationRequest(nasIE.RegType_MobilityRegUpdating,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, uplinkDataStatus)
-	pdu, err = EncodeNasPduWithSecurity(targetUe, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu, err = EncodeNasPduWithSecurity(targetUe, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(targetUe.AmfUeNgapId, targetUe.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -262,7 +252,7 @@ func TestN2Handover(t *testing.T) {
 	// target RAN receive ngap Initial Context Setup Request
 	n, err = n2Conn2.Read(recvMsg)
 	assert.Nil(t, err)
-	_, err = ngap.Decoder(recvMsg[:n])
+	_, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
 
 	// target RAN send ngap PDU Session Resource Setup Response (for paging)
@@ -273,7 +263,7 @@ func TestN2Handover(t *testing.T) {
 
 	// target RAN send NAS Registration Complete
 	pdu = GetRegistrationComplete(nil)
-	pdu, err = EncodeNasPduWithSecurity(targetUe, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu, err = EncodeNasPduWithSecurity(targetUe, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	assert.Nil(t, err)
 	sendMsg, err = GetUplinkNASTransport(targetUe.AmfUeNgapId, targetUe.RanUeNgapId, pdu)
 	assert.Nil(t, err)
@@ -283,10 +273,10 @@ func TestN2Handover(t *testing.T) {
 	// receive UE Configuration Update Command (equivalent to recvUeConfigUpdateCmd in reference test)
 	n, err = n2Conn2.Read(recvMsg)
 	assert.Nil(t, err)
-	ngapPdu, err = ngap.Decoder(recvMsg[:n])
+	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.Present, ngapType.NGAPPDUPresentInitiatingMessage, "Not NGAPPDUPresentInitiatingMessage")
-	assert.Equal(t, ngapPdu.InitiatingMessage.ProcedureCode.Value, ngapType.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
 
 	time.Sleep(1000 * time.Millisecond)
 }

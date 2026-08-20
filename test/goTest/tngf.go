@@ -36,7 +36,6 @@ import (
 	"github.com/free5gc/ike/security/lib"
 	"github.com/free5gc/ike/security/prf"
 
-	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/util/ueauth"
 )
 
@@ -517,7 +516,14 @@ func tngfApplyXFRMRule(ueIsInitiator bool, ifId uint32, childSA *TNGFChildSecuri
 // Unlike N3IWF's buildEAP5GANParameters (non3gpp.go), TNGF's also includes a UE
 // Identity field (TS 24.502 Table 9.3.2.2.2.3-1 type 5) — ported from the reference
 // test's tngfBuildEAP5GANParameters.
-func buildEAP5GANParametersTNGF(mobileIdentity5GS nasType.MobileIdentity5GS) []byte {
+//
+// mobileIdentityIei/mobileIdentityBuffer are the raw IEI byte and content bytes of
+// the caller's 5GS mobile identity (SUCI). This takes them as plain bytes rather
+// than a nas/ie.MobileId5GS, because that type no longer exposes a raw
+// IEI/length/buffer view (nas v1.3.0 redesigned it into semantically-typed fields
+// per identity kind) and this function only ever treated the identity as an
+// opaque IEI+buffer pair for TNGF's AN-Parameter wire format anyway.
+func buildEAP5GANParametersTNGF(mobileIdentityIei uint8, mobileIdentityBuffer []byte) []byte {
 	var anParameters []byte
 
 	// GUAMI. PLMN part matches PLMN_OCT; AMF ID "\xca\xfe\x00" matches amfCfg.yaml's amfId.
@@ -570,11 +576,11 @@ func buildEAP5GANParametersTNGF(mobileIdentity5GS nasType.MobileIdentity5GS) []b
 	anParameter = make([]byte, 3)
 	anParameter[0] = anParametersTypeUEIdentity
 	anParameter[1] = byte(16)
-	anParameter[2] = mobileIdentity5GS.GetIei()
+	anParameter[2] = mobileIdentityIei
 	anParameterLength := make([]byte, 2)
-	binary.BigEndian.PutUint16(anParameterLength, mobileIdentity5GS.GetLen())
+	binary.BigEndian.PutUint16(anParameterLength, uint16(len(mobileIdentityBuffer)))
 	anParameter = append(anParameter, anParameterLength...)
-	anParameter = append(anParameter, mobileIdentity5GS.Buffer...)
+	anParameter = append(anParameter, mobileIdentityBuffer...)
 	anParameters = append(anParameters, anParameter...)
 
 	return anParameters
