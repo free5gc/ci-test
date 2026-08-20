@@ -1,0 +1,43 @@
+#
+# Dockerfile responsible to compile every free5GC NF plus the webconsole
+# (binary + frontend) in a single build, so their Go module downloads and
+# compiles share one Go module/build cache instead of each NF re-downloading
+# the same overlapping dependencies from scratch in its own separate build.
+#
+# Each dockerfiles/nf_*/Dockerfile and dockerfiles/webui/Dockerfile then just
+# COPYs its own binary out of the resulting free5gc/all-base image.
+#
+
+FROM free5gc/base AS my-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Node.js 20 + sudo: needed to build the webconsole frontend (corepack/yarn)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update \
+    && apt-get -y install nodejs sudo \
+    && apt-get clean
+
+# Get free5GC
+COPY free5gc/ $GOPATH/src/free5gc/
+
+# Build every NF binary plus the webconsole binary + frontend in one pass
+RUN cd $GOPATH/src/free5gc \
+    && make -j$(nproc) all
+
+# Alpine is used for debug purpose. You can use scratch for a smaller footprint.
+FROM alpine:3.15
+
+WORKDIR /free5gc
+RUN mkdir -p bin/ cert/ public/
+
+# Copy every NF's executable
+COPY --from=my-base /go/src/free5gc/bin/ ./bin/
+
+# Copy the webconsole executable (named "webui" to match dockerfiles/webui's
+# expectations) and its built frontend static files
+COPY --from=my-base /go/src/free5gc/webconsole/bin/webconsole ./bin/webui
+COPY --from=my-base /go/src/free5gc/webconsole/public ./public
+
+# Copy default certificates (one pair per NF)
+COPY --from=my-base /go/src/free5gc/cert/* ./cert/

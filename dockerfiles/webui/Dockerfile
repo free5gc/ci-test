@@ -1,4 +1,4 @@
-FROM free5gc/webconsole-base:latest AS builder
+FROM free5gc/all-base:latest AS builder
 FROM bitnami/minideb:bullseye
 
 LABEL description="Free5GC open source 5G Core Network" \
@@ -16,7 +16,7 @@ WORKDIR /free5gc
 RUN mkdir -p config/ public/
 
 # Copy executable, frontend static files and default configuration
-COPY --from=builder /free5gc/${F5GC_MODULE} ./
+COPY --from=builder /free5gc/bin/${F5GC_MODULE} ./
 COPY --from=builder /free5gc/public ./public
 
 # Config files volume
