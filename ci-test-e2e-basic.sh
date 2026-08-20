@@ -66,6 +66,8 @@ case "$TARGET_TEST" in
     ;;
 esac
 
+docker compose -f "$TARGET_COMPOSE_FILE" logs
+
 # Cleanup: Stop and remove the containers after the test
 if ! docker compose -f "$TARGET_COMPOSE_FILE" down; then
     echo "Warning: Failed to stop and remove containers using $TARGET_COMPOSE_FILE"
