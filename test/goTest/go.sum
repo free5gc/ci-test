@@ -31,8 +31,6 @@ github.com/free-ran-ue/free-ran-ue/v2 v2.5.0 h1:ZKrSbBTp8Aag7aCPqnyqSKK8qDYxtD4S
 github.com/free-ran-ue/free-ran-ue/v2 v2.5.0/go.mod h1:f+HWzyvmQ1wf4iYWoPwxsZ+la2HOlr9wfSDp/f1/obo=
 github.com/free-ran-ue/util v0.1.0 h1:4U/1ovWrto7RfI6YodkoO6CZeI4pQStf908JiNXOzsU=
 github.com/free-ran-ue/util v0.1.0/go.mod h1:It9S56eAe+2JZXA4O1f1Bjus7PgAAy0xoc6kObuwjPQ=
-github.com/free5gc/aper v1.1.1 h1:O1WHg8J/Ab+TtpYuDjdUkoVv1dpR/K7L1/edP9+OujI=
-github.com/free5gc/aper v1.1.1/go.mod h1:erN7J8emgUvCFydYcPhHtknRfeHocPRJuGldpvXLE5I=
 github.com/free5gc/chf v1.2.6-0.20260819160712-4e06244b5612 h1:B28Kfir2Glbc76iYDd9byhqY0Rsyv32+h1eJAt1jWo4=
 github.com/free5gc/chf v1.2.6-0.20260819160712-4e06244b5612/go.mod h1:2XC+DdZTpXdzL4Tog24FfGmISa11514B34vhd8ptn6o=
 github.com/free5gc/ike v1.2.1 h1:xmC6CAfffuge6wgeeT8XDdzDEeTobiLoKHzi5QMY7Dk=

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/free5gc/aper"
+	"github.com/free5gc/ngap/aper"
 	nasIE "github.com/free5gc/nas/ie"
 	nasMessage "github.com/free5gc/nas/message"
 	ngapIE "github.com/free5gc/ngap/ie"

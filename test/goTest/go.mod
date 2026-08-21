@@ -9,7 +9,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/free-ran-ue/free-ran-ue/v2 v2.5.0
 	github.com/free-ran-ue/util v0.1.0
-	github.com/free5gc/aper v1.1.1
 	github.com/free5gc/ike v1.2.1
 	github.com/free5gc/nas v1.3.0
 	github.com/free5gc/ngap v1.2.0

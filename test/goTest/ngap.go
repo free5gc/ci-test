@@ -295,7 +295,6 @@ func GetPDUSessionResourceSetupResponseForPaging(amfUeNgapID, ranUeNgapID int64,
 			PDUSessionID:                            &ie.PDUSessionID{Value: 10},
 			PDUSessionResourceSetupResponseTransfer: &transfer,
 		}}},
-		PDUSessionResourceFailedToSetupListSURes: &ie.PDUSessionResourceFailedToSetupListSURes{},
 	}
 	return m.MarshalBinary()
 }
