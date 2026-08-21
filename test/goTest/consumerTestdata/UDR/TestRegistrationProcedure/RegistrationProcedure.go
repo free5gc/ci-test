@@ -9,22 +9,22 @@ const (
 	FREE5GC_CASE = "free5gc"
 )
 
-var TestAmDataTable = make(map[string]models.AccessAndMobilitySubscriptionData)
-var TestSmfSelDataTable = make(map[string]models.SmfSelectionSubscriptionData)
-var TestSmSelDataTable = make(map[string][]models.SessionManagementSubscriptionData)
-var TestAmPolicyDataTable = make(map[string]models.AmPolicyData)
-var TestSmPolicyDataTable = make(map[string]models.SmPolicyData)
+var TestAmDataTable = make(map[string]models.Udr_DR_AccessAndMobilitySubscriptionData)
+var TestSmfSelDataTable = make(map[string]models.Udr_DR_SmfSelectionSubscriptionData)
+var TestSmSelDataTable = make(map[string][]models.Udm_SDM_SessionManagementSubscriptionData)
+var TestAmPolicyDataTable = make(map[string]models.Udr_DR_AmPolicyData)
+var TestSmPolicyDataTable = make(map[string]models.Udr_DR_SmPolicyData)
 
 var TestChargingDataTable = make(map[string][]webui.ChargingData)
 var TestFlowRuleTable = make(map[string][]webui.FlowRule)
 var TestQoSFlowTable = make(map[string][]webui.QosFlow)
 
 func init() {
-	TestAmDataTable[FREE5GC_CASE] = models.AccessAndMobilitySubscriptionData{
+	TestAmDataTable[FREE5GC_CASE] = models.Udr_DR_AccessAndMobilitySubscriptionData{
 		Gpsis: []string{
 			"msisdn-0900000000",
 		},
-		Nssai: &models.Nssai{
+		Nssai: &models.Udm_SDM_Nssai{
 			DefaultSingleNssais: []models.Snssai{
 				{
 					Sst: 1,
@@ -60,24 +60,24 @@ func init() {
 		},
 	}
 
-	TestSmfSelDataTable[FREE5GC_CASE] = models.SmfSelectionSubscriptionData{
-		SubscribedSnssaiInfos: map[string]models.SnssaiInfo{
+	TestSmfSelDataTable[FREE5GC_CASE] = models.Udr_DR_SmfSelectionSubscriptionData{
+		SubscribedSnssaiInfos: map[string]models.Udm_SDM_SnssaiInfo{
 			"01FEDCBA": { // sst:1, sd:FEDCBA
-				DnnInfos: []models.DnnInfo{
+				DnnInfos: []models.Udm_SDM_DnnInfo{
 					{
 						Dnn: "internet",
 					},
 				},
 			},
 			"01112233": { // sst:1, sd:112233
-				DnnInfos: []models.DnnInfo{
+				DnnInfos: []models.Udm_SDM_DnnInfo{
 					{
 						Dnn: "internet2",
 					},
 				},
 			},
 			"01010203": { // sst:1, sd:010203
-				DnnInfos: []models.DnnInfo{
+				DnnInfos: []models.Udm_SDM_DnnInfo{
 					{
 						Dnn: "internet",
 					},
@@ -86,20 +86,20 @@ func init() {
 		},
 	}
 
-	TestAmPolicyDataTable[FREE5GC_CASE] = models.AmPolicyData{
+	TestAmPolicyDataTable[FREE5GC_CASE] = models.Udr_DR_AmPolicyData{
 		SubscCats: []string{
 			"free5gc",
 		},
 	}
 
-	TestSmPolicyDataTable[FREE5GC_CASE] = models.SmPolicyData{
-		SmPolicySnssaiData: map[string]models.SmPolicySnssaiData{
+	TestSmPolicyDataTable[FREE5GC_CASE] = models.Udr_DR_SmPolicyData{
+		SmPolicySnssaiData: map[string]models.Udr_DR_SmPolicySnssaiData{
 			"01FEDCBA": {
 				Snssai: &models.Snssai{
 					Sd:  "FEDCBA",
 					Sst: 1,
 				},
-				SmPolicyDnnData: map[string]models.SmPolicyDnnData{
+				SmPolicyDnnData: map[string]models.Udr_DR_SmPolicyDnnData{
 					"internet": {
 						Dnn: "internet",
 					},
@@ -110,7 +110,7 @@ func init() {
 					Sd:  "112233",
 					Sst: 1,
 				},
-				SmPolicyDnnData: map[string]models.SmPolicyDnnData{
+				SmPolicyDnnData: map[string]models.Udr_DR_SmPolicyDnnData{
 					"internet2": {
 						Dnn: "internet2",
 					},
@@ -121,7 +121,7 @@ func init() {
 					Sd:  "010203",
 					Sst: 1,
 				},
-				SmPolicyDnnData: map[string]models.SmPolicyDnnData{
+				SmPolicyDnnData: map[string]models.Udr_DR_SmPolicyDnnData{
 					"internet": {
 						Dnn: "internet",
 					},
@@ -130,19 +130,19 @@ func init() {
 		},
 	}
 
-	TestSmSelDataTable[FREE5GC_CASE] = []models.SessionManagementSubscriptionData{
+	TestSmSelDataTable[FREE5GC_CASE] = []models.Udm_SDM_SessionManagementSubscriptionData{
 		{
 			SingleNssai: &models.Snssai{
 				Sst: 1,
 				Sd:  "FEDCBA",
 			},
-			DnnConfigurations: map[string]models.DnnConfiguration{
+			DnnConfigurations: map[string]models.Udm_SDM_DnnConfiguration{
 				"internet": {
-					SscModes: &models.SscModes{
-						DefaultSscMode:  models.SscMode__1,
-						AllowedSscModes: []models.SscMode{models.SscMode__1, models.SscMode__2, models.SscMode__3},
+					SscModes: &models.Udm_SDM_SscModes{
+						DefaultSscMode:  models.SscMode_1,
+						AllowedSscModes: []models.SscMode{models.SscMode_1, models.SscMode_2, models.SscMode_3},
 					},
-					PduSessionTypes: &models.PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
+					PduSessionTypes: &models.Udm_SDM_PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
 						AllowedSessionTypes: []models.PduSessionType{models.PduSessionType_IPV4},
 					},
 					SessionAmbr: &models.Ambr{
@@ -164,13 +164,13 @@ func init() {
 				Sst: 1,
 				Sd:  "112233",
 			},
-			DnnConfigurations: map[string]models.DnnConfiguration{
+			DnnConfigurations: map[string]models.Udm_SDM_DnnConfiguration{
 				"internet2": {
-					SscModes: &models.SscModes{
-						DefaultSscMode:  models.SscMode__1,
-						AllowedSscModes: []models.SscMode{models.SscMode__1, models.SscMode__2, models.SscMode__3},
+					SscModes: &models.Udm_SDM_SscModes{
+						DefaultSscMode:  models.SscMode_1,
+						AllowedSscModes: []models.SscMode{models.SscMode_1, models.SscMode_2, models.SscMode_3},
 					},
-					PduSessionTypes: &models.PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
+					PduSessionTypes: &models.Udm_SDM_PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
 						AllowedSessionTypes: []models.PduSessionType{models.PduSessionType_IPV4},
 					},
 					SessionAmbr: &models.Ambr{
@@ -192,13 +192,13 @@ func init() {
 				Sst: 1,
 				Sd:  "010203",
 			},
-			DnnConfigurations: map[string]models.DnnConfiguration{
+			DnnConfigurations: map[string]models.Udm_SDM_DnnConfiguration{
 				"internet": {
-					SscModes: &models.SscModes{
-						DefaultSscMode:  models.SscMode__1,
-						AllowedSscModes: []models.SscMode{models.SscMode__1, models.SscMode__2, models.SscMode__3},
+					SscModes: &models.Udm_SDM_SscModes{
+						DefaultSscMode:  models.SscMode_1,
+						AllowedSscModes: []models.SscMode{models.SscMode_1, models.SscMode_2, models.SscMode_3},
 					},
-					PduSessionTypes: &models.PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
+					PduSessionTypes: &models.Udm_SDM_PduSessionTypes{DefaultSessionType: models.PduSessionType_IPV4,
 						AllowedSessionTypes: []models.PduSessionType{models.PduSessionType_IPV4},
 					},
 					SessionAmbr: &models.Ambr{

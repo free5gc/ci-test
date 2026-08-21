@@ -23,10 +23,8 @@ import (
 	"github.com/free5gc/ike/security/integ"
 	"github.com/free5gc/ike/security/prf"
 
-	"github.com/free5gc/nas"
-	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
-	nasSecurity "github.com/free5gc/nas/security"
+	nasIE "github.com/free5gc/nas/ie"
+	nasMessage "github.com/free5gc/nas/message"
 	"github.com/free5gc/openapi/models"
 )
 
@@ -42,14 +40,12 @@ import (
 // built on top of it directly.
 func TestN3iwf(t *testing.T) {
 	// New UE
-	ue := NewRanUeContext(UE_IMSI, 1, nasSecurity.AlgCiphering128NEA0, nasSecurity.AlgIntegrity128NIA2,
+	ue := NewRanUeContext(UE_IMSI, 1, nasMessage.AlgCiphering128NEA0, nasMessage.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
 	ue.AmfUeNgapId = 1
 	ue.AuthenticationSubs = GetAuthSubscription(UE_K, UE_OPC, "")
-	mobileIdentity5GS := nasType.MobileIdentity5GS{
-		Len:    13, // suci
-		Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10},
-	}
+	mobileIdentity5GS := MobileIdentity5GS(
+		[]uint8{0x01, 0x02, 0xf8, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10})
 
 	// Used to save IPsec/IKE related data
 	n3ue := new(N3IWFUe)
@@ -289,7 +285,7 @@ func TestN3iwf(t *testing.T) {
 
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
-	registrationRequest := GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequest := GetRegistrationRequest(nasIE.RegType_InitialReg,
 		mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
 
 	nasLength := make([]byte, 2)
@@ -341,8 +337,6 @@ func TestN3iwf(t *testing.T) {
 		t.Fatalf("Received packet is not an EAP payload")
 	}
 
-	var decodedNAS *nas.Message
-
 	eapExpanded, ok = eapReq.EapTypeData.(*eap.EapExpanded)
 	if !ok {
 		t.Fatalf("The EAP data is not an EAP expended.")
@@ -350,14 +344,14 @@ func TestN3iwf(t *testing.T) {
 
 	// Decode NAS - Authentication Request
 	nasData := eapExpanded.VendorData[4:]
-	decodedNAS = new(nas.Message)
-	if err := decodedNAS.PlainNasDecode(&nasData); err != nil {
+	decodedNAS, err := nasMessage.ParseGMM(nasData)
+	if err != nil {
 		t.Fatalf("Decode plain NAS fail: %+v", err)
 	}
 
 	// Calculate for RES*
 	assert.NotNil(t, decodedNAS)
-	rand := decodedNAS.GetRANDValue()
+	rand := decodedNAS.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
 
 	// send NAS Authentication Response
@@ -425,10 +419,10 @@ func TestN3iwf(t *testing.T) {
 	}
 
 	// send NAS Security Mode Complete Msg
-	registrationRequestWith5GMM := GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequestWith5GMM := GetRegistrationRequest(nasIE.RegType_InitialReg,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = GetSecurityModeComplete(registrationRequestWith5GMM)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCipheredWithNew5gNasSecCtx, true, true)
 	assert.Nil(t, err)
 
 	// ============================================
@@ -673,7 +667,7 @@ func TestN3iwf(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	nasMsg, err := NASDecode(ue, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, nasEnv[:n])
+	nasMsg, err := NASDecode(ue, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, nasEnv[:n])
 	if err != nil {
 		t.Fatalf("NAS Decode Fail: %+v", err)
 	}
@@ -684,7 +678,7 @@ func TestN3iwf(t *testing.T) {
 
 	// send NAS Registration Complete Msg
 	pdu = GetRegistrationComplete(nil)
-	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -707,8 +701,8 @@ func TestN3iwf(t *testing.T) {
 
 	var pduSessionId uint8 = 1
 
-	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
-	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId, nasIE.ReqType_InitialReq, "internet", &sNssai)
+	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -860,7 +854,7 @@ func TestN3iwf(t *testing.T) {
 		spew.Config.Indent = "\t"
 		nasStr := spew.Sdump(nasMsg)
 		t.Log("Dump DecodePDUSessionEstablishmentAccept:\n", nasStr)
-		pduAddress, err = GetPDUAddress(nasMsg.PDUSessionEstablishmentAccept)
+		pduAddress, err = GetPDUAddress(nasMsg)
 		if err != nil {
 			t.Fatalf("GetPDUAddress Fail: %+v", err)
 		}

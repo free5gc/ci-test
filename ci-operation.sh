@@ -108,6 +108,7 @@ main() {
                         else
                             echo "Test $test failed"
                             echo
+                            exit 1
                         fi
                     done
                 ;;

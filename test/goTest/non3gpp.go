@@ -22,9 +22,8 @@ import (
 	ike_message "github.com/free5gc/ike/message"
 	ike_security "github.com/free5gc/ike/security"
 
-	"github.com/free5gc/nas"
-	"github.com/free5gc/nas/nasMessage"
-	nasSecurity "github.com/free5gc/nas/security"
+	"github.com/free5gc/nas/ie"
+	"github.com/free5gc/nas/message"
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/ueauth"
 )
@@ -564,8 +563,8 @@ func sendPduSessionEstablishmentRequest(
 	}
 
 	// PDU session establishment request
-	pdu := GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
-	pdu, err := EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu := GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId, ie.ReqType_InitialReq, "internet", &sNssai)
+	pdu, err := EncodeNasPduInEnvelopeWithSecurity(ue, pdu, message.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		return ifaces, fmt.Errorf("Encode NAS PDU In Envelope Fail:%+v", err)
 	}
@@ -764,7 +763,7 @@ func sendPduSessionEstablishmentRequest(
 		nasStr := spew.Sdump(nasMsg)
 		t.Log("Dump DecodePDUSessionEstablishmentAccept:\n", nasStr)
 
-		pduAddr, err = GetPDUAddress(nasMsg.PDUSessionEstablishmentAccept)
+		pduAddr, err = GetPDUAddress(nasMsg)
 		if err != nil {
 			t.Errorf("GetPDUAddress Fail: %+v", err)
 		}
@@ -791,7 +790,7 @@ func deriveKn3iwf(ue *RanUeContext) ([]byte, error) {
 	P0 := make([]byte, 4)
 	binary.BigEndian.PutUint32(P0, ue.ULCount.Get()-1)
 	L0 := ueauth.KDFLen(P0)
-	P1 := []byte{nasSecurity.AccessTypeNon3GPP}
+	P1 := []byte{byte(message.AccessTypeNon3GPP)}
 	L1 := ueauth.KDFLen(P1)
 
 	return ueauth.GetKDFValue(ue.Kamf, ueauth.FC_FOR_KGNB_KN3IWF_DERIVATION, P0, L0, P1, L1)

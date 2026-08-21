@@ -13,15 +13,15 @@ const (
 	AMFStatusSubscriptionModfy200 = "AMFStatusSubscriptionModfy200"
 )
 
-var ConsumerAMFStatusSubscriptionTable = make(map[string]models.AmfCommunicationSubscriptionData)
+var ConsumerAMFStatusSubscriptionTable = make(map[string]models.Amf_Comm_SubscriptionData)
 
 func init() {
-	ConsumerAMFStatusSubscriptionTable[AMFStatusSubscription403] = models.AmfCommunicationSubscriptionData{
+	ConsumerAMFStatusSubscriptionTable[AMFStatusSubscription403] = models.Amf_Comm_SubscriptionData{
 		AmfStatusUri: "",
 		GuamiList:    nil,
 	}
 
-	ConsumerAMFStatusSubscriptionTable[AMFStatusSubscription201] = models.AmfCommunicationSubscriptionData{
+	ConsumerAMFStatusSubscriptionTable[AMFStatusSubscription201] = models.Amf_Comm_SubscriptionData{
 		AmfStatusUri: "https://127.0.0.1:29333/AMFStatusNotify",
 		GuamiList: []models.Guami{
 			{
@@ -42,15 +42,15 @@ func init() {
 	ConsumerAMFStatusUnSubscriptionTable[AMFStatusUnSubscription204] = "1"
 }
 
-var ConsumerAMFStatusChangeSubscribeModfyTable = make(map[string]models.AmfCommunicationSubscriptionData)
+var ConsumerAMFStatusChangeSubscribeModfyTable = make(map[string]models.Amf_Comm_SubscriptionData)
 
 func init() {
-	ConsumerAMFStatusChangeSubscribeModfyTable[AMFStatusSubscriptionModfy403] = models.AmfCommunicationSubscriptionData{
+	ConsumerAMFStatusChangeSubscribeModfyTable[AMFStatusSubscriptionModfy403] = models.Amf_Comm_SubscriptionData{
 		AmfStatusUri: "",
 		GuamiList:    nil,
 	}
 
-	ConsumerAMFStatusChangeSubscribeModfyTable[AMFStatusSubscriptionModfy200] = models.AmfCommunicationSubscriptionData{
+	ConsumerAMFStatusChangeSubscribeModfyTable[AMFStatusSubscriptionModfy200] = models.Amf_Comm_SubscriptionData{
 		AmfStatusUri: "https://127.0.0.1:29333/AMFStatusNotify/1",
 		GuamiList: []models.Guami{
 			{

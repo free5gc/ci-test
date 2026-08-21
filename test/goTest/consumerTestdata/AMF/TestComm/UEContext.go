@@ -18,32 +18,32 @@ const (
 	RegistrationStatusUpdate200  = "RegistrationStatusUpdate200"
 )
 
-var ConsumerAMFCreateUEContextRequsetTable = make(map[string]models.CreateUeContextRequest)
+var ConsumerAMFCreateUEContextRequsetTable = make(map[string]models.CreateUEContextRequestBody)
 
 func init() {
-	ConsumerAMFCreateUEContextRequsetTable[CreateUEContext403] = models.CreateUeContextRequest{
-		JsonData: &models.UeContextCreateData{
-			UeContext: &models.UeContext{
+	ConsumerAMFCreateUEContextRequsetTable[CreateUEContext403] = models.CreateUEContextRequestBody{
+		JsonData: &models.Amf_Comm_UeContextCreateData{
+			UeContext: &models.Amf_Comm_UeContext{
 				Supi: "imsi-208930000007487",
 			},
-			TargetId:           &models.NgRanTargetId{},
-			SourceToTargetData: &models.N2InfoContent{},
-			PduSessionList:     []models.N2SmInformation{},
+			TargetId:           &models.Amf_Comm_NgRanTargetId{},
+			SourceToTargetData: &models.Amf_Comm_N2InfoContent{},
+			PduSessionList:     []models.Amf_Comm_N2SmInformation{},
 			N2NotifyUri:        "127.0.0.1",
 			UeRadioCapability:  nil,
 			NgapCause:          nil,
 			SupportedFeatures:  "",
 		},
 	}
-	ConsumerAMFCreateUEContextRequsetTable[CreateUEContext201] = models.CreateUeContextRequest{
-		JsonData: &models.UeContextCreateData{
-			UeContext: &models.UeContext{
+	ConsumerAMFCreateUEContextRequsetTable[CreateUEContext201] = models.CreateUEContextRequestBody{
+		JsonData: &models.Amf_Comm_UeContextCreateData{
+			UeContext: &models.Amf_Comm_UeContext{
 				Supi: "imsi-208930000007487",
 				RestrictedRatList: []models.RatType{
 					models.RatType_NR,
 				},
 			},
-			TargetId: &models.NgRanTargetId{
+			TargetId: &models.Amf_Comm_NgRanTargetId{
 				RanNodeId: &models.GlobalRanNodeId{
 					PlmnId: &models.PlmnId{
 						Mcc: "208",
@@ -64,18 +64,18 @@ func init() {
 					Tac: "000001",
 				},
 			},
-			SourceToTargetData: &models.N2InfoContent{
+			SourceToTargetData: &models.Amf_Comm_N2InfoContent{
 				NgapMessageType: 0,
 				NgapIeType:      "NgapIeType_PDU_RES_SETUP_REQ",
 				NgapData: &models.RefToBinaryData{
 					ContentId: "N2SmInfo",
 				},
 			},
-			PduSessionList: []models.N2SmInformation{
+			PduSessionList: []models.Amf_Comm_N2SmInformation{
 				{
 					PduSessionId: 10,
-					N2InfoContent: &models.N2InfoContent{
-						NgapIeType: models.AmfCommunicationNgapIeType_PDU_RES_REL_CMD,
+					N2InfoContent: &models.Amf_Comm_N2InfoContent{
+						NgapIeType: models.Amf_Comm_NgapIeType_PDU_RES_REL_CMD,
 						NgapData: &models.RefToBinaryData{
 							ContentId: "N2SmInfo",
 						},
@@ -90,10 +90,10 @@ func init() {
 	}
 }
 
-var ConsumerAMFReleaseUEContextRequestTable = make(map[string]models.UeContextRelease)
+var ConsumerAMFReleaseUEContextRequestTable = make(map[string]models.Amf_Comm_UEContextRelease)
 
 func init() {
-	ConsumerAMFReleaseUEContextRequestTable[UeContextRelease404] = models.UeContextRelease{
+	ConsumerAMFReleaseUEContextRequestTable[UeContextRelease404] = models.Amf_Comm_UEContextRelease{
 		Supi:                "",
 		UnauthenticatedSupi: false,
 		NgapCause: &models.NgApCause{
@@ -101,7 +101,7 @@ func init() {
 			Value: 0,
 		},
 	}
-	ConsumerAMFReleaseUEContextRequestTable[UeContextRelease201] = models.UeContextRelease{
+	ConsumerAMFReleaseUEContextRequestTable[UeContextRelease201] = models.Amf_Comm_UEContextRelease{
 		Supi:                "imsi-208930000007487",
 		UnauthenticatedSupi: true,
 		NgapCause: &models.NgApCause{
@@ -112,11 +112,11 @@ func init() {
 
 }
 
-var ConsumerAMFUEContextTransferRequestTable = make(map[string]models.UeContextTransferRequest)
+var ConsumerAMFUEContextTransferRequestTable = make(map[string]models.UEContextTransferRequestBody)
 
 func init() {
-	ConsumerAMFUEContextTransferRequestTable[UeContextTransfer404] = models.UeContextTransferRequest{
-		JsonData: &models.UeContextTransferReqData{
+	ConsumerAMFUEContextTransferRequestTable[UeContextTransfer404] = models.UEContextTransferRequestBody{
+		JsonData: &models.Amf_Comm_UeContextTransferReqData{
 			Reason:            "",
 			AccessType:        "",
 			PlmnId:            nil,
@@ -124,19 +124,19 @@ func init() {
 			SupportedFeatures: "",
 		},
 	}
-	ConsumerAMFUEContextTransferRequestTable[UeContextTransferINIT_REG200] = models.UeContextTransferRequest{
-		JsonData: &models.UeContextTransferReqData{
-			Reason:            models.TransferReason_INIT_REG,
-			AccessType:        models.AccessType__3_GPP_ACCESS,
+	ConsumerAMFUEContextTransferRequestTable[UeContextTransferINIT_REG200] = models.UEContextTransferRequestBody{
+		JsonData: &models.Amf_Comm_UeContextTransferReqData{
+			Reason:            models.Amf_Comm_TransferReason_INIT_REG,
+			AccessType:        models.AccessType_3_GPP_ACCESS,
 			PlmnId:            nil,
 			RegRequest:        nil,
 			SupportedFeatures: "",
 		},
 	}
-	ConsumerAMFUEContextTransferRequestTable[UeContextTransferMOBI_REG200] = models.UeContextTransferRequest{
-		JsonData: &models.UeContextTransferReqData{
-			Reason:            models.TransferReason_MOBI_REG,
-			AccessType:        models.AccessType__3_GPP_ACCESS,
+	ConsumerAMFUEContextTransferRequestTable[UeContextTransferMOBI_REG200] = models.UEContextTransferRequestBody{
+		JsonData: &models.Amf_Comm_UeContextTransferReqData{
+			Reason:            models.Amf_Comm_TransferReason_MOBI_REG,
+			AccessType:        models.AccessType_3_GPP_ACCESS,
 			PlmnId:            nil,
 			RegRequest:        nil,
 			SupportedFeatures: "",
@@ -144,30 +144,30 @@ func init() {
 	}
 }
 
-var ConsumerAMFUEContextEBIAssignmentTable = make(map[string]models.AssignEbiData)
+var ConsumerAMFUEContextEBIAssignmentTable = make(map[string]models.Amf_Comm_AssignEbiData)
 
 func init() {
-	ConsumerAMFUEContextEBIAssignmentTable[AssignEbiData403] = models.AssignEbiData{
+	ConsumerAMFUEContextEBIAssignmentTable[AssignEbiData403] = models.Amf_Comm_AssignEbiData{
 		PduSessionId:    0,
 		ArpList:         nil,
 		ReleasedEbiList: nil,
 	}
-	ConsumerAMFUEContextEBIAssignmentTable[AssignEbiData200] = models.AssignEbiData{
+	ConsumerAMFUEContextEBIAssignmentTable[AssignEbiData200] = models.Amf_Comm_AssignEbiData{
 		PduSessionId:    10,
 		ArpList:         nil,
 		ReleasedEbiList: nil,
 	}
 }
 
-var ConsumerRegistrationStatusUpdateTable = make(map[string]models.UeRegStatusUpdateReqData)
+var ConsumerRegistrationStatusUpdateTable = make(map[string]models.Amf_Comm_UeRegStatusUpdateReqData)
 
 func init() {
-	ConsumerRegistrationStatusUpdateTable[RegistrationStatusUpdate200] = models.UeRegStatusUpdateReqData{
-		TransferStatus:       models.UeContextTransferStatus_TRANSFERRED,
+	ConsumerRegistrationStatusUpdateTable[RegistrationStatusUpdate200] = models.Amf_Comm_UeRegStatusUpdateReqData{
+		TransferStatus:       models.Amf_Comm_UeContextTransferStatus_TRANSFERRED,
 		ToReleaseSessionList: nil,
 		PcfReselectedInd:     false,
 	}
-	ConsumerRegistrationStatusUpdateTable[RegistrationStatusUpdate404] = models.UeRegStatusUpdateReqData{
+	ConsumerRegistrationStatusUpdateTable[RegistrationStatusUpdate404] = models.Amf_Comm_UeRegStatusUpdateReqData{
 		TransferStatus:       "",
 		ToReleaseSessionList: nil,
 		PcfReselectedInd:     false,

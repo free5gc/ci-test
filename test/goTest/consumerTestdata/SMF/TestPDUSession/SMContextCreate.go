@@ -1,13 +1,10 @@
 package TestPDUSession
 
 import (
-	"bytes"
-
 	"github.com/google/uuid"
 
-	"github.com/free5gc/nas"
-	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
+	"github.com/free5gc/nas/ie"
+	"github.com/free5gc/nas/message"
 	"github.com/free5gc/openapi/models"
 )
 
@@ -16,106 +13,74 @@ const (
 	ACTIVATING      = "ACTIVATING"
 )
 
+// nasMessagePDUSessionEstablishmentRequestData holds the fixture values used to
+// build the N1 SM PDU. Migrated to the new nas API: the IEs are now typed
+// structs in nas/ie instead of nasType wrappers carrying raw octets, so the
+// placeholder values the old table encoded as octets (IEI in the high nibble,
+// value 0) are expressed directly as zero-valued fields.
 type nasMessagePDUSessionEstablishmentRequestData struct {
-	inExtendedProtocolDiscriminator                 uint8
-	inPDUSessionID                                  uint8
-	inPTI                                           uint8
-	inPDUSESSIONESTABLISHMENTREQUESTMessageIdentity uint8
-	inIntegrityProtectionMaximumDataRate            nasType.IntegrityProtectionMaximumDataRate
-	inPDUSessionType                                nasType.PDUSessionType
-	inSSCMode                                       nasType.SSCMode
-	inCapability5GSM                                nasType.Capability5GSM
-	inMaximumNumberOfSupportedPacketFilters         nasType.MaximumNumberOfSupportedPacketFilters
-	inAlwaysonPDUSessionRequested                   nasType.AlwaysonPDUSessionRequested
-	inSMPDUDNRequestContainer                       nasType.SMPDUDNRequestContainer
-	inExtendedProtocolConfigurationOptions          nasType.ExtendedProtocolConfigurationOptions
+	inPDUSessionID                   uint8
+	inPTI                            uint8
+	inIntegrityProtectionMaxDataRate *ie.IntegrityProtectionMaxDataRate
+	inPDUSessType                    *ie.PDUSessType
+	inSSCMode                        *ie.SSCMode
+	inCapability5GSM                 *ie.Capability5GSM
+	inMaxNumOfSupportedPktFilters    *ie.MaxNumOfSupportedPktFilters
+	inAlwaysonPDUSessReq             *ie.AlwaysonPDUSessReq
+	inSMPDUDNReqCntr                 *ie.SMPDUDNReqCntr
+	inExtendedProtCfgOpts            *ie.ExtendedProtCfgOpts
 }
 
 var NasMessagePDUSessionEstablishmentRequestTable = make(map[string]nasMessagePDUSessionEstablishmentRequestData)
 
 func init() {
 	NasMessagePDUSessionEstablishmentRequestTable[SERVICE_REQUEST] = nasMessagePDUSessionEstablishmentRequestData{
-		inExtendedProtocolDiscriminator: nasMessage.Epd5GSSessionManagementMessage,
-		inPDUSessionID:                  0x01,
-		inPTI:                           0x01,
-		inPDUSESSIONESTABLISHMENTREQUESTMessageIdentity: nas.MsgTypePDUSessionEstablishmentRequest,
-		inIntegrityProtectionMaximumDataRate: nasType.IntegrityProtectionMaximumDataRate{
-			Iei:   0,
-			Octet: [2]uint8{0x01, 0x01},
+		inPDUSessionID: 0x01,
+		inPTI:          0x01,
+		inIntegrityProtectionMaxDataRate: &ie.IntegrityProtectionMaxDataRate{
+			Uplink:   0x01,
+			Downlink: 0x01,
 		},
-		inPDUSessionType: nasType.PDUSessionType{
-			Octet: 0x90,
-		},
-		inSSCMode: nasType.SSCMode{
-			Octet: 0xA0,
-		},
-		inCapability5GSM: nasType.Capability5GSM{
-			Iei:   nasMessage.PDUSessionEstablishmentRequestCapability5GSMType,
-			Len:   2,
-			Octet: [13]uint8{0x01, 0x01},
-		},
-		inMaximumNumberOfSupportedPacketFilters: nasType.MaximumNumberOfSupportedPacketFilters{
-			Iei:   nasMessage.PDUSessionEstablishmentRequestMaximumNumberOfSupportedPacketFiltersType,
-			Octet: [2]uint8{0x01, 0x01},
-		},
-		inAlwaysonPDUSessionRequested: nasType.AlwaysonPDUSessionRequested{
-			Octet: 0xB0,
-		},
-		inSMPDUDNRequestContainer: nasType.SMPDUDNRequestContainer{
-			Iei:    nasMessage.PDUSessionEstablishmentRequestSMPDUDNRequestContainerType,
-			Len:    2,
-			Buffer: []uint8{0x01, 0x01},
-		},
-		inExtendedProtocolConfigurationOptions: nasType.ExtendedProtocolConfigurationOptions{
-			Iei:    nasMessage.PDUSessionEstablishmentRequestExtendedProtocolConfigurationOptionsType,
-			Len:    2,
-			Buffer: []uint8{0x01, 0x01},
+		// The old fixture set these IEs to their IEI with a zero value.
+		inPDUSessType:                 &ie.PDUSessType{},
+		inSSCMode:                     &ie.SSCMode{},
+		inCapability5GSM:              &ie.Capability5GSM{Rqos: true},
+		inMaxNumOfSupportedPktFilters: &ie.MaxNumOfSupportedPktFilters{MaxNumOfSupportedPktFilters: 0x01},
+		inAlwaysonPDUSessReq:          &ie.AlwaysonPDUSessReq{},
+		inSMPDUDNReqCntr:              &ie.SMPDUDNReqCntr{DNSpecificId: 0x01},
+		inExtendedProtCfgOpts: &ie.ExtendedProtCfgOpts{
+			FromMs: &ie.ExtCfgOptFromMs{},
 		},
 	}
 }
 
 func GetEstablishmentRequestData(testType string) (n1SmBytes []byte) {
 	table := NasMessagePDUSessionEstablishmentRequestTable[testType]
-	m := nas.NewMessage()
-	m.GsmMessage = nas.NewGsmMessage()
-	m.PDUSessionEstablishmentRequest = nasMessage.NewPDUSessionEstablishmentRequest(0x0)
-	n1SmBuf := bytes.Buffer{}
-	m.PDUSessionEstablishmentRequest.ExtendedProtocolDiscriminator.SetExtendedProtocolDiscriminator(table.inExtendedProtocolDiscriminator)
-	m.PDUSessionEstablishmentRequest.PDUSessionID.SetPDUSessionID(table.inPDUSessionID)
-	m.PDUSessionEstablishmentRequest.PTI.SetPTI(table.inPTI)
-	m.PDUSessionEstablishmentRequest.PDUSESSIONESTABLISHMENTREQUESTMessageIdentity.SetMessageType(table.inPDUSESSIONESTABLISHMENTREQUESTMessageIdentity)
-	m.PDUSessionEstablishmentRequest.IntegrityProtectionMaximumDataRate = table.inIntegrityProtectionMaximumDataRate
 
-	m.PDUSessionEstablishmentRequest.PDUSessionType = nasType.NewPDUSessionType(nasMessage.PDUSessionEstablishmentRequestPDUSessionTypeType)
-	m.PDUSessionEstablishmentRequest.PDUSessionType = &table.inPDUSessionType
+	m := &message.PDUSessEstReq{
+		PDUSessId:                      table.inPDUSessionID,
+		PTI:                            table.inPTI,
+		IntegrityProtectionMaxDataRate: table.inIntegrityProtectionMaxDataRate,
+		PDUSessType:                    table.inPDUSessType,
+		SSCMode:                        table.inSSCMode,
+		Capability5GSM:                 table.inCapability5GSM,
+		MaxNumOfSupportedPktFilters:    table.inMaxNumOfSupportedPktFilters,
+		AlwaysonPDUSessReq:             table.inAlwaysonPDUSessReq,
+		SMPDUDNReqCntr:                 table.inSMPDUDNReqCntr,
+		ExtendedProtCfgOpts:            table.inExtendedProtCfgOpts,
+	}
 
-	m.PDUSessionEstablishmentRequest.SSCMode = nasType.NewSSCMode(nasMessage.PDUSessionEstablishmentRequestSSCModeType)
-	m.PDUSessionEstablishmentRequest.SSCMode = &table.inSSCMode
-
-	m.PDUSessionEstablishmentRequest.Capability5GSM = nasType.NewCapability5GSM(nasMessage.PDUSessionEstablishmentRequestCapability5GSMType)
-	m.PDUSessionEstablishmentRequest.Capability5GSM = &table.inCapability5GSM
-
-	m.PDUSessionEstablishmentRequest.MaximumNumberOfSupportedPacketFilters = nasType.NewMaximumNumberOfSupportedPacketFilters(nasMessage.PDUSessionEstablishmentRequestMaximumNumberOfSupportedPacketFiltersType)
-	m.PDUSessionEstablishmentRequest.MaximumNumberOfSupportedPacketFilters = &table.inMaximumNumberOfSupportedPacketFilters
-
-	m.PDUSessionEstablishmentRequest.AlwaysonPDUSessionRequested = nasType.NewAlwaysonPDUSessionRequested(nasMessage.PDUSessionEstablishmentRequestAlwaysonPDUSessionRequestedType)
-	m.PDUSessionEstablishmentRequest.AlwaysonPDUSessionRequested = &table.inAlwaysonPDUSessionRequested
-
-	m.PDUSessionEstablishmentRequest.SMPDUDNRequestContainer = nasType.NewSMPDUDNRequestContainer(nasMessage.PDUSessionEstablishmentRequestSMPDUDNRequestContainerType)
-	m.PDUSessionEstablishmentRequest.SMPDUDNRequestContainer = &table.inSMPDUDNRequestContainer
-
-	m.PDUSessionEstablishmentRequest.ExtendedProtocolConfigurationOptions = nasType.NewExtendedProtocolConfigurationOptions(nasMessage.PDUSessionEstablishmentRequestExtendedProtocolConfigurationOptionsType)
-	m.PDUSessionEstablishmentRequest.ExtendedProtocolConfigurationOptions = &table.inExtendedProtocolConfigurationOptions
-	m.PDUSessionEstablishmentRequest.EncodePDUSessionEstablishmentRequest(&n1SmBuf)
-
-	n1SmBytes = n1SmBuf.Bytes()
+	n1SmBytes, err := m.MarshalBinary()
+	if err != nil {
+		return nil
+	}
 	return n1SmBytes
 }
 
-var ConsumerSMFPDUSessionSMContextCreateTable = make(map[string]models.SmfPduSessionSmContextCreateData)
+var ConsumerSMFPDUSessionSMContextCreateTable = make(map[string]models.Smf_PDUSess_SmContextCreateData)
 
 func init() {
-	ConsumerSMFPDUSessionSMContextCreateTable[SERVICE_REQUEST] = models.SmfPduSessionSmContextCreateData{
+	ConsumerSMFPDUSessionSMContextCreateTable[SERVICE_REQUEST] = models.Smf_PDUSess_SmContextCreateData{
 		Supi:                "imsi-208930000007487",
 		UnauthenticatedSupi: false,
 		PduSessionId:        2,
@@ -132,81 +97,59 @@ func init() {
 			Mcc: "208",
 			Mnc: "93",
 		},
-		RequestType: models.RequestType_INITIAL_REQUEST,
+		RequestType: models.Smf_PDUSess_RequestType_INITIAL_REQUEST,
 		N1SmMsg: &models.RefToBinaryData{
 			ContentId: "NGAP",
 		},
-		AnType:  models.AccessType__3_GPP_ACCESS,
+		AnType:  models.AccessType_3_GPP_ACCESS,
 		RatType: models.RatType_NR,
-		SelMode: models.DnnSelectionMode_VERIFIED,
+		SelMode: models.Smf_PDUSess_DnnSelectionMode_VERIFIED,
 	}
 }
 
+// nasMessageULNASTransportData holds the fixture values for the UL NAS
+// transport envelope. In the new API the message type and EPD come from the
+// message struct itself, so only the IEs remain configurable here.
 type nasMessageULNASTransportData struct {
-	inExtendedProtocolDiscriminator         uint8
-	inSpareHalfOctetAndSecurityHeaderType   uint8
-	inULNASTRANSPORTMessageIdentity         uint8
-	inSpareHalfOctetAndPayloadContainerType uint8
-	inPayloadContainer                      nasType.PayloadContainer
-	inPduSessionID2Value                    nasType.PduSessionID2Value
-	//inOldPDUSessionID                       nasType.OldPDUSessionID
-	inRequestType nasType.RequestType
-	inSNSSAI      nasType.SNSSAI
-	//inAdditionalInformation                 nasType.AdditionalInformation
+	inPayloadCntr *ie.PayloadCntr
+	inPDUSessID   *ie.PDUSessId2
+	inReqType     *ie.ReqType
+	inSNSSAI      *ie.SNSSAI
 }
 
 var NasMessageNasMessageULNASTransportDataTable = make(map[string]nasMessageULNASTransportData)
 
 func init() {
 	NasMessageNasMessageULNASTransportDataTable[SERVICE_REQUEST] = nasMessageULNASTransportData{
-		inExtendedProtocolDiscriminator:         nasMessage.Epd5GSMobilityManagementMessage,
-		inSpareHalfOctetAndSecurityHeaderType:   0x01,
-		inULNASTRANSPORTMessageIdentity:         0x00,
-		inSpareHalfOctetAndPayloadContainerType: nasMessage.PayloadContainerTypeN1SMInfo,
-		inPayloadContainer: nasType.PayloadContainer{
-			Iei:    (1), // n1Sminfo
-			Len:    uint16(len(GetEstablishmentRequestData(SERVICE_REQUEST))),
-			Buffer: GetEstablishmentRequestData(SERVICE_REQUEST),
+		inPayloadCntr: &ie.PayloadCntr{
+			Pct:      ie.PayloadCntrType_N1SMInfo,
+			Contents: GetEstablishmentRequestData(SERVICE_REQUEST),
 		},
-		inPduSessionID2Value: nasType.PduSessionID2Value{
-			Iei:   nasMessage.ULNASTransportPduSessionID2ValueType,
-			Octet: 10,
-		},
-
-		//inOldPDUSessionID
-
-		inRequestType: nasType.RequestType{
-			Octet: nasMessage.ULNASTransportRequestTypeType<<4 | nasMessage.ULNASTransportRequestTypeType,
-		},
-		inSNSSAI: nasType.SNSSAI{
-			Iei:   nasMessage.ULNASTransportSNSSAIType,
-			Len:   4,
-			Octet: [8]uint8{0x01, 0x02, 0x03, 0x01},
-		},
-		//inAdditionalInformation
+		inPDUSessID: &ie.PDUSessId2{Value: 10},
+		inReqType:   &ie.ReqType{Value: ie.ReqType_InitialReq},
+		// The old fixture packed SST 0x01 and SD 0x020301 into a raw octet
+		// array; SD is a hex string in the new API.
+		inSNSSAI: &ie.SNSSAI{SST: 0x01, SD: "020301"},
 	}
 }
 
-func GetUlNasTransportData(testType string) (ulNasTransport nasMessage.ULNASTransport) {
+func GetUlNasTransportData(testType string) *message.ULNASTransport {
 	table := NasMessageNasMessageULNASTransportDataTable[testType]
 
-	ulNasTransport.SetMessageType(nas.MsgTypeULNASTransport)
-	ulNasTransport.SetExtendedProtocolDiscriminator(table.inExtendedProtocolDiscriminator) // 5GS MM
-	ulNasTransport.SetPayloadContainerType(table.inSpareHalfOctetAndPayloadContainerType)  // n1SmInfo
-	ulNasTransport.PayloadContainer.SetLen(table.inPayloadContainer.Len)
-	ulNasTransport.SetPayloadContainerContents(table.inPayloadContainer.Buffer)
-	ulNasTransport.PduSessionID2Value = &table.inPduSessionID2Value
-	ulNasTransport.RequestType = &table.inRequestType
-	ulNasTransport.SNSSAI = &table.inSNSSAI
-
-	return ulNasTransport
+	return &message.ULNASTransport{
+		PayloadCntrType: &ie.PayloadCntrType{Value: ie.PayloadCntrType_N1SMInfo},
+		PayloadCntr:     table.inPayloadCntr,
+		PDUSessID:       table.inPDUSessID,
+		ReqType:         table.inReqType,
+		SNSSAI:          table.inSNSSAI,
+	}
 }
 
-var ConsumerSMFPDUSessionUpdateContextTable = make(map[string]models.UpdateSmContextRequest)
+var ConsumerSMFPDUSessionUpdateContextTable = make(map[string]models.UpdateSmContextRequestBody)
 
 func init() {
-	ConsumerSMFPDUSessionUpdateContextTable[ACTIVATING] = models.UpdateSmContextRequest{
-		JsonData: &models.SmfPduSessionSmContextUpdateData{
+	ConsumerSMFPDUSessionUpdateContextTable[ACTIVATING] = models.UpdateSmContextRequestBody{
+		JsonData: &models.Smf_PDUSess_SmContextUpdateData{
 			UpCnxState:  ACTIVATING,
 			ServingNfId: uuid.New().String(),
 			Guami: &models.Guami{
@@ -223,7 +166,7 @@ func init() {
 			N1SmMsg: &models.RefToBinaryData{
 				ContentId: "NGAP",
 			},
-			AnType:  models.AccessType__3_GPP_ACCESS,
+			AnType:  models.AccessType_3_GPP_ACCESS,
 			RatType: models.RatType_NR,
 		},
 		BinaryDataN1SmMessage:     nil,

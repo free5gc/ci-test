@@ -13,9 +13,8 @@ import (
 	"github.com/calee0219/fatal"
 	"golang.org/x/net/ipv4"
 
-	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
-	"github.com/free5gc/nas/security"
+	"github.com/free5gc/nas/ie"
+	"github.com/free5gc/nas/message"
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/milenage"
 	"github.com/free5gc/util/ueauth"
@@ -26,15 +25,15 @@ type RanUeContext struct {
 	Supi               string
 	RanUeNgapId        int64
 	AmfUeNgapId        int64
-	ULCount            security.Count
-	DLCount            security.Count
-	CipheringAlg       uint8
-	IntegrityAlg       uint8
+	ULCount            message.Count
+	DLCount            message.Count
+	CipheringAlg       ie.AlgCiphering
+	IntegrityAlg       ie.AlgIntegrity
 	KnasEnc            [16]uint8
 	KnasInt            [16]uint8
 	Kamf               []uint8
 	AnType             models.AccessType
-	AuthenticationSubs models.AuthenticationSubscription
+	AuthenticationSubs models.Udr_DR_AuthenticationSubscription
 }
 
 func CalculateIpv4HeaderChecksum(hdr *ipv4.Header) uint32 {
@@ -54,48 +53,48 @@ func CalculateIpv4HeaderChecksum(hdr *ipv4.Header) uint32 {
 	return ^(Checksum&0xffff0000>>16 + Checksum&0xffff)
 }
 
-func GetAuthSubscription(k, opc, op string) models.AuthenticationSubscription {
-	var authSubs models.AuthenticationSubscription
+func GetAuthSubscription(k, opc, op string) models.Udr_DR_AuthenticationSubscription {
+	var authSubs models.Udr_DR_AuthenticationSubscription
 	authSubs.EncPermanentKey = k
 	authSubs.EncOpcKey = opc
 	authSubs.AuthenticationManagementField = "8000"
 
-	authSubs.SequenceNumber = &models.SequenceNumber{
+	authSubs.SequenceNumber = &models.Udr_DR_SequenceNumber{
 		Sqn: UE_SQN,
 	}
-	authSubs.AuthenticationMethod = models.AuthMethod__5_G_AKA
+	authSubs.AuthenticationMethod = models.Udr_DR_AuthMethod_5_G_AKA
 	return authSubs
 }
 
-func GetEAPAKAPrimeAuthSubscription(k, opc string) models.AuthenticationSubscription {
-	var authSubs models.AuthenticationSubscription
+func GetEAPAKAPrimeAuthSubscription(k, opc string) models.Udr_DR_AuthenticationSubscription {
+	var authSubs models.Udr_DR_AuthenticationSubscription
 	authSubs.EncPermanentKey = k
 	authSubs.EncOpcKey = opc
 	authSubs.AuthenticationManagementField = "8000"
-	authSubs.SequenceNumber = &models.SequenceNumber{
+	authSubs.SequenceNumber = &models.Udr_DR_SequenceNumber{
 		Sqn: UE_SQN,
 	}
-	authSubs.AuthenticationMethod = models.AuthMethod_EAP_AKA_PRIME
+	authSubs.AuthenticationMethod = models.Udr_DR_AuthMethod_EAP_AKA_PRIME
 	return authSubs
 }
 
-func GetAccessAndMobilitySubscriptionData() (amData models.AccessAndMobilitySubscriptionData) {
+func GetAccessAndMobilitySubscriptionData() (amData models.Udr_DR_AccessAndMobilitySubscriptionData) {
 	return TestRegistrationProcedure.TestAmDataTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
-func GetSmfSelectionSubscriptionData() (smfSelData models.SmfSelectionSubscriptionData) {
+func GetSmfSelectionSubscriptionData() (smfSelData models.Udr_DR_SmfSelectionSubscriptionData) {
 	return TestRegistrationProcedure.TestSmfSelDataTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
-func GetSessionManagementSubscriptionData() (smfSelData []models.SessionManagementSubscriptionData) {
+func GetSessionManagementSubscriptionData() (smfSelData []models.Udm_SDM_SessionManagementSubscriptionData) {
 	return TestRegistrationProcedure.TestSmSelDataTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
-func GetAmPolicyData() (amPolicyData models.AmPolicyData) {
+func GetAmPolicyData() (amPolicyData models.Udr_DR_AmPolicyData) {
 	return TestRegistrationProcedure.TestAmPolicyDataTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
-func GetSmPolicyData() (smPolicyData models.SmPolicyData) {
+func GetSmPolicyData() (smPolicyData models.Udr_DR_SmPolicyData) {
 	return TestRegistrationProcedure.TestSmPolicyDataTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
@@ -111,8 +110,9 @@ func GetQosFlowData() (qosFlows []WebUI.QosFlow) {
 	return TestRegistrationProcedure.TestQoSFlowTable[TestRegistrationProcedure.FREE5GC_CASE]
 }
 
-func NewRanUeContext(supi string, ranUeNgapId int64, cipheringAlg, integrityAlg uint8,
-	AnType models.AccessType) *RanUeContext {
+func NewRanUeContext(supi string, ranUeNgapId int64, cipheringAlg ie.AlgCiphering,
+	integrityAlg ie.AlgIntegrity, AnType models.AccessType,
+) *RanUeContext {
 	ue := RanUeContext{}
 	ue.RanUeNgapId = ranUeNgapId
 	ue.Supi = supi
@@ -123,8 +123,8 @@ func NewRanUeContext(supi string, ranUeNgapId int64, cipheringAlg, integrityAlg 
 }
 
 func (ue *RanUeContext) DeriveRESstarAndSetKey(
-	authSubs models.AuthenticationSubscription, rand []byte, snName string) []byte {
-
+	authSubs models.Udr_DR_AuthenticationSubscription, rand []byte, snName string,
+) []byte {
 	sqn, err := hex.DecodeString(authSubs.SequenceNumber.Sqn)
 	if err != nil {
 		fatal.Fatalf("DecodeString error: %+v", err)
@@ -180,8 +180,8 @@ func (ue *RanUeContext) DeriveRESstarAndSetKey(
 }
 
 func (ue *RanUeContext) DeriveResEAPMessageAndSetKey(
-	authSubs models.AuthenticationSubscription, eAPMessage []byte, snName string) []byte {
-
+	authSubs models.Udr_DR_AuthenticationSubscription, eAPMessage []byte, snName string,
+) []byte {
 	sqn, err := hex.DecodeString(authSubs.SequenceNumber.Sqn)
 	if err != nil {
 		fatal.Fatalf("DecodeString error: %+v", err)
@@ -362,9 +362,9 @@ func (ue *RanUeContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) 
 // Algorithm key Derivation function defined in TS 33.501 Annex A.9
 func (ue *RanUeContext) DerivateAlgKey() {
 	// Security Key
-	P0 := []byte{security.NNASEncAlg}
+	P0 := []byte{message.NNASEncAlg}
 	L0 := ueauth.KDFLen(P0)
-	P1 := []byte{ue.CipheringAlg}
+	P1 := []byte{uint8(ue.CipheringAlg)}
 	L1 := ueauth.KDFLen(P1)
 
 	kenc, err := ueauth.GetKDFValue(ue.Kamf, ueauth.FC_FOR_ALGORITHM_KEY_DERIVATION, P0, L0, P1, L1)
@@ -374,9 +374,9 @@ func (ue *RanUeContext) DerivateAlgKey() {
 	copy(ue.KnasEnc[:], kenc[16:32])
 
 	// Integrity Key
-	P0 = []byte{security.NNASIntAlg}
+	P0 = []byte{message.NNASIntAlg}
 	L0 = ueauth.KDFLen(P0)
-	P1 = []byte{ue.IntegrityAlg}
+	P1 = []byte{uint8(ue.IntegrityAlg)}
 	L1 = ueauth.KDFLen(P1)
 
 	kint, err := ueauth.GetKDFValue(ue.Kamf, ueauth.FC_FOR_ALGORITHM_KEY_DERIVATION, P0, L0, P1, L1)
@@ -386,51 +386,52 @@ func (ue *RanUeContext) DerivateAlgKey() {
 	copy(ue.KnasInt[:], kint[16:32])
 }
 
-func (ue *RanUeContext) GetUESecurityCapability() (UESecurityCapability *nasType.UESecurityCapability) {
-	UESecurityCapability = &nasType.UESecurityCapability{
-		Iei:    nasMessage.RegistrationRequestUESecurityCapabilityType,
-		Len:    2,
-		Buffer: []uint8{0x00, 0x00},
-	}
+func (ue *RanUeContext) GetUESecurityCapability() *ie.UESecCapability {
+	// Length 2 keeps the two octets the old packet carried (EA then IA).
+	capability := &ie.UESecCapability{Length: 2}
+
 	switch ue.CipheringAlg {
-	case security.AlgCiphering128NEA0:
-		UESecurityCapability.SetEA0_5G(1)
-	case security.AlgCiphering128NEA1:
-		UESecurityCapability.SetEA1_128_5G(1)
-	case security.AlgCiphering128NEA2:
-		UESecurityCapability.SetEA2_128_5G(1)
-	case security.AlgCiphering128NEA3:
-		UESecurityCapability.SetEA3_128_5G(1)
+	case message.AlgCiphering128NEA0:
+		capability.EA05G = true
+	case message.AlgCiphering128NEA1:
+		capability.EA1_128_5G = true
+	case message.AlgCiphering128NEA2:
+		capability.EA2_128_5G = true
+	case message.AlgCiphering128NEA3:
+		capability.EA3_128_5G = true
 	}
 
 	switch ue.IntegrityAlg {
-	case security.AlgIntegrity128NIA0:
-		UESecurityCapability.SetIA0_5G(1)
-	case security.AlgIntegrity128NIA1:
-		UESecurityCapability.SetIA1_128_5G(1)
-	case security.AlgIntegrity128NIA2:
-		UESecurityCapability.SetIA2_128_5G(1)
-	case security.AlgIntegrity128NIA3:
-		UESecurityCapability.SetIA3_128_5G(1)
+	case message.AlgIntegrity128NIA0:
+		capability.IA05G = true
+	case message.AlgIntegrity128NIA1:
+		capability.IA1_128_5G = true
+	case message.AlgIntegrity128NIA2:
+		capability.IA2_128_5G = true
+	case message.AlgIntegrity128NIA3:
+		capability.IA3_128_5G = true
 	}
 
-	return
+	return capability
 }
 
-func (ue *RanUeContext) Get5GMMCapability() (capability5GMM *nasType.Capability5GMM) {
-	return &nasType.Capability5GMM{
-		Iei:   nasMessage.RegistrationRequestCapability5GMMType,
-		Len:   1,
-		Octet: [13]uint8{0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+func (ue *RanUeContext) Get5GMMCapability() *ie.Capability5GMM {
+	// The old packet set octet 3 to 0x07, i.e. bits 1-3: S1 mode, handover
+	// attach and LPP.
+	return &ie.Capability5GMM{
+		Length:   1,
+		S1Mode:   true,
+		HOAttach: true,
+		LPP:      true,
 	}
 }
 
-func (ue *RanUeContext) GetBearerType() uint8 {
-	if ue.AnType == models.AccessType__3_GPP_ACCESS {
-		return security.Bearer3GPP
+func (ue *RanUeContext) GetBearerType() message.BearerType {
+	if ue.AnType == models.AccessType_3_GPP_ACCESS {
+		return message.Bearer3GPP
 	} else if ue.AnType == models.AccessType_NON_3_GPP_ACCESS {
-		return security.BearerNon3GPP
+		return message.BearerNon3GPP
 	} else {
-		return security.OnlyOneBearer
+		return message.OnlyOneBearer
 	}
 }

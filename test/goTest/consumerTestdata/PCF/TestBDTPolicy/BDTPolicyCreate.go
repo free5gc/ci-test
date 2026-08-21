@@ -6,23 +6,23 @@ import (
 	"github.com/free5gc/openapi/models"
 )
 
-func GetCreateTestData() models.BdtReqData {
+func GetCreateTestData() models.Pcf_BDTPolCtrl_BdtReqData {
 	startTime := time.Now()
 	stopTime := startTime.Add(10 * time.Minute)
-	bdtReqData := models.BdtReqData{
+	bdtReqData := models.Pcf_BDTPolCtrl_BdtReqData{
 		AspId: "123456",
-		DesTimeInt: &models.TimeWindow{
+		DesTimeInt: &models.Nef_TimeWindow{
 			StartTime: &startTime,
 			StopTime:  &stopTime,
 		},
 		NumOfUes: 1,
-		VolPerUe: &models.UsageThreshold{
+		VolPerUe: &models.Nef_UsageThreshold{
 			Duration:       1,
 			TotalVolume:    1,
 			DownlinkVolume: 1,
 			UplinkVolume:   1,
 		},
-		NwAreaInfo: &models.NetworkAreaInfo{
+		NwAreaInfo: &models.Pcf_BDTPolCtrl_NetworkAreaInfo{
 			Tais: []models.Tai{
 				{
 					PlmnId: &models.PlmnId{
@@ -60,8 +60,8 @@ func GetCreateTestData() models.BdtReqData {
 	return bdtReqData
 }
 
-func GetUpdateTestData() models.PcfBdtPolicyControlBdtPolicyDataPatch {
-	bdtPolicyDataPatch := models.PcfBdtPolicyControlBdtPolicyDataPatch{
+func GetUpdateTestData() models.Pcf_BDTPolCtrl_BdtPolicyDataPatch {
+	bdtPolicyDataPatch := models.Pcf_BDTPolCtrl_BdtPolicyDataPatch{
 		SelTransPolicyId: 1,
 	}
 	return bdtPolicyDataPatch

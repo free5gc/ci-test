@@ -6,12 +6,12 @@ import (
 	"github.com/free5gc/openapi/models"
 )
 
-func BuildSmfNfProfile() (uuId string, profile models.NrfNfManagementNfProfile) {
+func BuildSmfNfProfile() (uuId string, profile models.Nrf_NFMgmt_NFProfile) {
 	uuId = uuid.New().String()
-	profile = models.NrfNfManagementNfProfile{
+	profile = models.Nrf_NFMgmt_NFProfile{
 		NfInstanceId: uuId,
-		NfType:       models.NrfNfManagementNfType_SMF,
-		NfStatus:     models.NrfNfManagementNfStatus_REGISTERED,
+		NfType:       models.Nrf_NFMgmt_NFType_SMF,
+		NfStatus:     models.Nrf_NFMgmt_NFStatus_REGISTERED,
 		SNssais: []models.ExtSnssai{
 			{
 				Sst: 1,
@@ -24,21 +24,21 @@ func BuildSmfNfProfile() (uuId string, profile models.NrfNfManagementNfProfile) 
 				Mnc: "93",
 			},
 		},
-		NfServices: []models.NrfNfManagementNfService{
+		NfServices: []models.Nrf_NFMgmt_NFService{
 			{
 
 				ServiceInstanceId: "1",
-				ServiceName:       models.ServiceName_NSMF_PDUSESSION,
+				ServiceName:       models.Nrf_NFMgmt_ServiceName_NSMF_PDUSESSION,
 				Scheme:            models.UriScheme_HTTPS,
-				NfServiceStatus:   models.NfServiceStatus_REGISTERED,
-				Versions: []models.NfServiceVersion{
+				NfServiceStatus:   models.Nrf_NFMgmt_NFServiceStatus_REGISTERED,
+				Versions: []models.Nrf_NFMgmt_NFServiceVersion{
 					{
 						ApiVersionInUri: "v1",
 						ApiFullVersion:  "1.0.0",
 					},
 				},
 				ApiPrefix: "https://localhost:29502",
-				IpEndPoints: []models.IpEndPoint{
+				IpEndPoints: []models.Nrf_NFMgmt_IpEndPoint{
 					{
 						Ipv4Address: "127.0.0.1",
 						Port:        29502,
@@ -46,14 +46,14 @@ func BuildSmfNfProfile() (uuId string, profile models.NrfNfManagementNfProfile) 
 				},
 			},
 		},
-		SmfInfo: &models.SmfInfo{
-			SNssaiSmfInfoList: []models.SnssaiSmfInfoItem{
+		SmfInfo: &models.Nrf_NFMgmt_SmfInfo{
+			SNssaiSmfInfoList: []models.Nrf_NFMgmt_SnssaiSmfInfoItem{
 				{
 					SNssai: &models.ExtSnssai{
 						Sst: 1,
 						Sd:  "010203",
 					},
-					DnnSmfInfoList: []models.DnnSmfInfoItem{
+					DnnSmfInfoList: []models.Nrf_NFMgmt_DnnSmfInfoItem{
 						{
 							Dnn: "internet",
 						},
