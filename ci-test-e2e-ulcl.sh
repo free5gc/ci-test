@@ -45,8 +45,9 @@ if [[ ! "$TARGET_TEST" =~ ^($TEST_POOL)$ ]]; then
     exit 1
 fi
 
-# remove any existing containers
-docker rm -f mongodb ci-mongodb || true
+# force-cleanup any leftovers from a previous run that failed to tear down cleanly
+docker compose -f "$TARGET_COMPOSE_FILE" down --remove-orphans -v || true
+docker rm -f mongodb ci-mongodb 2>/dev/null || true
 
 # Up the containers using the selected compose file
 if ! docker compose -f "$TARGET_COMPOSE_FILE" up -d --wait --wait-timeout "$TARGET_TIMEOUT"; then
@@ -82,9 +83,11 @@ if [ $exit_code -ne 0 ]; then
 fi
 
 # Cleanup: Stop and remove the containers after the test
-if ! docker compose -f "$TARGET_COMPOSE_FILE" down; then
-    echo "Warning: Failed to stop and remove containers using $TARGET_COMPOSE_FILE"
+if ! docker compose -f "$TARGET_COMPOSE_FILE" down --remove-orphans -v; then
+    echo "Warning: Failed to stop and remove containers using $TARGET_COMPOSE_FILE, forcing cleanup"
+    docker compose -f "$TARGET_COMPOSE_FILE" rm -f -s -v || true
 fi
 
 echo "Test completed with exit code: $exit_code"
+
 exit $exit_code
