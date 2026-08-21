@@ -138,7 +138,9 @@ case "$TARGET_TEST" in
     ;;
 esac
 
-docker compose -f "$TARGET_COMPOSE_FILE" logs
+if [ $exit_code -ne 0 ]; then
+    docker compose -f "$TARGET_COMPOSE_FILE" logs
+fi
 
 # Cleanup: Stop and remove the containers after the test
 if ! docker compose -f "$TARGET_COMPOSE_FILE" down; then
