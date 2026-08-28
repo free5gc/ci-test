@@ -31,7 +31,7 @@
             "defaultSingleNssais": [
                 {
                     "sst": 1,
-                    "sd": "010203",
+                    "sd": "",
                     "isDefault": true
                 }
             ]
@@ -45,7 +45,7 @@
         {
             "singleNssai": {
                 "sst": 1,
-                "sd": "010203"
+                "sd": ""
             },
             "dnnConfigurations": {
                 "internet": {
@@ -79,7 +79,7 @@
     ],
     "SmfSelectionSubscriptionData": {
         "subscribedSnssaiInfos": {
-            "01010203": {
+            "01": {
                 "dnnInfos": [
                     {
                         "dnn": "internet"
@@ -95,10 +95,10 @@
     },
     "SmPolicyData": {
         "smPolicySnssaiData": {
-            "01010203": {
+            "01": {
                 "snssai": {
                     "sst": 1,
-                    "sd": "010203"
+                    "sd": ""
                 },
                 "smPolicyDnnData": {
                     "internet": {
@@ -112,14 +112,14 @@
         {
             "filter": "1.1.1.1/32",
             "precedence": 128,
-            "snssai": "01010203",
+            "snssai": "01",
             "dnn": "internet",
             "qosRef": 1
         }
     ],
     "QosFlows": [
         {
-            "snssai": "01010203",
+            "snssai": "01",
             "dnn": "internet",
             "qosRef": 1,
             "5qi": 8,
@@ -131,7 +131,7 @@
     ],
     "ChargingDatas": [
         {
-            "snssai": "01010203",
+            "snssai": "01",
             "dnn": "",
             "filter": "",
             "chargingMethod": "Online",
@@ -139,7 +139,7 @@
             "unitCost": "1"
         },
         {
-            "snssai": "01010203",
+            "snssai": "01",
             "dnn": "internet",
             "qosRef": 1,
             "filter": "1.1.1.1/32",

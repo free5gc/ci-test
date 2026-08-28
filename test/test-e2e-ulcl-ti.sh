@@ -1,0 +1,57 @@
+#!/bin/bash
+
+##########################
+#
+# usage:
+# ./test-ulcl-ti.sh
+#
+# e.g. ./test-ulcl-ti.sh
+#
+##########################
+
+echo "test TestULCLTrafficInfluence with offline charging"
+
+# post ue (ci-test free-ran-ue) data to db
+./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-ti-offline.json
+if [ $? -ne 0 ]; then
+    echo "Failed to post subscription data"
+    exit 1
+fi
+
+# run test
+cd goTest
+go test -v -vet=off -run TestULCLTrafficInfluence
+go_test_exit_code=$?
+cd ..
+
+# delete ue (ci-test free-ran-ue) data from db
+./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-ti-offline.json
+if [ $? -ne 0 ]; then
+    echo "Failed to delete subscription data"
+    exit 1
+fi
+
+echo "test TestULCLTrafficInfluence with online charging"
+
+# post ue (ci-test free-ran-ue) data to db
+./api-webconsole-subscribtion-data-action.sh post json/webconsole-subscription-data-ti-online.json
+if [ $? -ne 0 ]; then
+    echo "Failed to post subscription data"
+    exit 1
+fi
+
+# run test
+cd goTest
+go test -v -vet=off -run TestULCLTrafficInfluence
+go_test_exit_code=$?
+cd ..
+
+# delete ue (ci-test free-ran-ue) data from db
+./api-webconsole-subscribtion-data-action.sh delete json/webconsole-subscription-data-ti-online.json
+if [ $? -ne 0 ]; then
+    echo "Failed to delete subscription data"
+    exit 1
+fi
+
+# return the test exit code
+exit $go_test_exit_code

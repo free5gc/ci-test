@@ -1,5 +1,11 @@
 # ULCL Traffic Influence
 
+## Topology
+
+```text
+ci0(ue0) - gnb0 - i-upf0 - psa-upf0
+```
+
 ## Test Command
 
 ```bash
@@ -8,7 +14,7 @@
 
 ## Test File
 
-- [ulclTrafficInfluence_test.go](../test/goTest/ulclTrafficInfluence_test.go)
+- [e2e_ulclTrafficInfluence_test.go](../test/goTest/e2e_ulclTrafficInfluence_test.go)
 
 ## Test Cases
 
@@ -30,7 +36,7 @@
 ## Test Steps
 
 1. Post ue subscription data to db via web console's api
-2. Activate PacketRusher
+2. Activate free-ue
 3. Run [test cases](#test-cases)
-4. Deactivate PacketRusher
+4. Deactivate free-ue
 5. Delete ue subscription data from db via web console's api

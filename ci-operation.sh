@@ -15,15 +15,27 @@
 
 usage() {
     echo "usage: ./ci-operation.sh [action] [target]"
-    echo "  - pull: remove the existed free5gc repo under base/ and clone a new free5gc with its NFs"
+    echo "  - pull: remove the existed free5gc repo and clone a new free5gc with its NFs"
     echo "  - fetch [NF] [PR#]: fetch the target NF's PR"
     echo "  - testAll: run all free5gc tests"
     echo "  - build: build the necessary images"
-    echo "  - up <basic-charging | ulcl-ti | ulcl-mp>: bring up the compose"
-    echo "  - down <basic-charging | ulcl-ti | ulcl-mp>: shut down the compose"
-    echo "  - test <basic-charging | ulcl-ti | ulcl-mp>: run ULCL test"
+    echo "  - up <it | basic | ulcl>: bring up the compose"
+    echo "  - down <it | basic | ulcl>: shut down the compose"
+    echo "  - test:"
+    echo "      - it <test_name>: run the integration test with the given test name"
+    echo "      - it-all: run all the integration tests"
+    echo "      - basic: run the basic charging e2e test"
+    echo "      - ulcl: run the ulcl e2e tests"
     echo "  - exec <ue | ue-1 | ue-2>: enter the ue container"
 }
+
+COMPOSE_DIR="composes/build"
+
+IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
+E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
+E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
+
+IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf"
 
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
@@ -32,38 +44,35 @@ main() {
 
     case "$1" in
         "pull")
-            cd base
             rm -rf free5gc
             git clone -j `nproc` --recursive https://github.com/free5gc/free5gc
-            cd ..
         ;;
         "fetch")
-            cd base/free5gc/NFs/$2
+            cd free5gc/NFs/$2
             git fetch origin pull/$3/head:pr-$3
             git checkout pr-$3
-            cd ../../../../
+            cd ../../../
         ;;
         "testAll")
-            cd base/free5gc/
+            cd free5gc/
             make all
             ./force_kill.sh
             ./test.sh All
-            cd ../../
+            cd ../
         ;;
         "build")
             make nfs
         ;;
         "up")
             case "$2" in
-                "basic-charging")
-                    docker compose -f docker-compose-basic.yaml up --build
+                "it")
+                    docker compose -f $IT_COMPOSE_FILE up --build
                 ;;
-                "ulcl-ti")
-                    docker compose -f docker-compose-ulcl-ti.yaml up --build
-
+                "basic")
+                    docker compose -f $E2E_BASIC_COMPOSE_FILE up --build
                 ;;
-                "ulcl-mp")
-                    docker compose -f docker-compose-ulcl-mp.yaml up --build
+                "ulcl")
+                    docker compose -f $E2E_ULCL_COMPOSE_FILE up --build
                 ;;
                 *)
                     usage
@@ -71,14 +80,14 @@ main() {
         ;;
         "down")
             case "$2" in
-                "basic-charging")
-                    docker compose -f docker-compose-basic.yaml down -v
+                "it")
+                    docker compose -f $IT_COMPOSE_FILE down -v
                 ;;
-                "ulcl-ti")
-                    docker compose -f docker-compose-ulcl-ti.yaml down -v
+                "basic")
+                    docker compose -f $E2E_BASIC_COMPOSE_FILE down -v
                 ;;
-                "ulcl-mp")
-                    docker compose -f docker-compose-ulcl-mp.yaml down -v
+                "ulcl")
+                    docker compose -f $E2E_ULCL_COMPOSE_FILE down -v
                 ;;
                 *)
                     usage
@@ -86,15 +95,29 @@ main() {
         ;;
         "test")
             case "$2" in
-                "basic-charging")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-basic-charging.sh"
+                "it")
+                    ./ci-test-it.sh --test $3 --build
                 ;;
-                "ulcl-ti")
-                    docker exec ue /bin/bash -c "cd /root/test && ./test-ulcl-ti.sh TestULCLTrafficInfluence"
+                "it-all")
+                    for test in $(echo $IT_TEST_POOL | tr "|" "\n")
+                    do
+                        if ./ci-test-it.sh --test $test --build
+                        then
+                            echo "Test $test passed"
+                            echo
+                        else
+                            echo "Test $test failed"
+                            echo
+                            exit 1
+                        fi
+                    done
                 ;;
-                "ulcl-mp")
-                    docker exec ue-1 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe1"
-                    docker exec ue-2 /bin/bash -c "cd /root/test && ./test-ulcl-mp.sh TestULCLMultiPathUe2"
+                "basic")
+                    ./ci-test-e2e-basic.sh --test TestRegPduCharging --build
+                ;;
+                "ulcl")
+                    ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence --build
+                    ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe --build
                 ;;
                 *)
                     usage
@@ -102,8 +125,11 @@ main() {
         ;;
         "exec")
             case "$2" in
-                "ue")
-                    docker exec -it ue bash
+                "it")
+                    docker exec -it it bash
+                ;;
+                "ue-0")
+                    docker exec -it ue-0 bash
                 ;;
                 "ue-1")
                     docker exec -it ue-1 bash

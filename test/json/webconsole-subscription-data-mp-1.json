@@ -1,6 +1,6 @@
 {
     "plmnID": "20893",
-    "ueId": "imsi-208930000000001",
+    "ueId": "imsi-208930000000002",
     "AuthenticationSubscription": {
         "authenticationManagementField": "8000",
         "authenticationMethod": "5G_AKA",

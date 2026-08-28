@@ -1,0 +1,221 @@
+name: CI
+
+on:
+  push:
+    branches:
+        - main
+  pull_request:
+
+env:
+  FREE5GC_REPO: https://github.com/free5gc/free5gc
+
+  BUILD_COMPOSE_IT_FILE: composes/build/docker-compose-it.yaml
+  BUILD_COMPOSE_E2E_BASIC_FILE: composes/build/docker-compose-e2e-basic.yaml
+  BUILD_COMPOSE_E2E_ULCL_FILE: composes/build/docker-compose-e2e-ulcl.yaml
+
+  CI_COMPOSE_IT_FILE: composes/docker-compose-ci-it.yaml
+  CI_COMPOSE_E2E_BASIC_FILE: composes/docker-compose-ci-e2e-basic.yaml
+  CI_COMPOSE_E2E_ULCL_FILE: composes/docker-compose-ci-e2e-ulcl.yaml
+
+  TIMEOUT: 300
+
+jobs:
+  basic-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone free5GC
+        run: |
+          rm -rf free5gc
+          git clone -j $(nproc) --recursive $FREE5GC_REPO
+
+      - name: Make images
+        run: make
+
+      - name: Check compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_IT_FILE" down
+
+      - name: Run basic tests
+        run: |
+          ./ci-test-it.sh --build --test TestRegistration
+          ./ci-test-it.sh --build --test TestDeregistration
+          ./ci-test-it.sh --build --test TestGUTIRegistration
+          ./ci-test-it.sh --build --test TestEAPAKAPrimeAuthentication
+          ./ci-test-it.sh --build --test TestDuplicateRegistration
+          ./ci-test-it.sh --build --test TestServiceRequest
+          ./ci-test-it.sh --build --test TestPDUSessionReleaseRequest
+          ./ci-test-it.sh --build --test TestNasReroute
+          ./ci-test-it.sh --build --test TestN2Handover
+          ./ci-test-it.sh --build --test TestXnHandover
+          ./ci-test-it.sh --build --test TestPaging
+          ./ci-test-it.sh --build --test TestReSynchronization
+          ./ci-test-it.sh --build --test TestMultiAmfRegistration
+          ./ci-test-it.sh --build --test TestRequestTwoPDUSessions
+
+      - name: Run basic non3gpp tests
+        run: |
+          ./ci-test-it.sh --build --test TestN3iwf
+          ./ci-test-it.sh --build --test TestTngf
+
+      - name: Run basic DC tests
+        run: |
+          ./ci-test-it.sh --build --test TestDC
+          ./ci-test-it.sh --build --test TestDynamicDC
+          ./ci-test-it.sh --build --test TestXnDcHandover
+          
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
+
+  e2e-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clone free5GC
+        run: |
+          rm -rf free5gc
+          git clone -j $(nproc) --recursive $FREE5GC_REPO
+
+      - name: Make images
+        run: make
+
+      - name: Check E2E basic compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_E2E_BASIC_FILE" down
+
+      - name: Run E2E basic tests
+        run: |
+          ./ci-test-e2e-basic.sh --build --test TestRegPduCharging
+
+      - name: Check E2E ULCL compose
+        run: |
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" down
+
+      - name: Run E2E ULCL tests
+        run: |
+          ./ci-test-e2e-ulcl.sh --build --test TestULCLTrafficInfluence
+          ./ci-test-e2e-ulcl.sh --build --test TestULCLMultiPathUe
+
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
+
+  ci-basic-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check compose
+        run: |
+          docker compose -f "$CI_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_IT_FILE" down
+
+      - name: Run basic tests
+        run: |
+          ./ci-test-it.sh --test TestRegistration
+          ./ci-test-it.sh --test TestDeregistration
+          ./ci-test-it.sh --test TestGUTIRegistration
+          ./ci-test-it.sh --test TestEAPAKAPrimeAuthentication
+          ./ci-test-it.sh --test TestDuplicateRegistration
+          ./ci-test-it.sh --test TestServiceRequest
+          ./ci-test-it.sh --test TestPDUSessionReleaseRequest
+          ./ci-test-it.sh --test TestNasReroute
+          ./ci-test-it.sh --test TestN2Handover
+          ./ci-test-it.sh --test TestXnHandover
+          ./ci-test-it.sh --test TestPaging
+          ./ci-test-it.sh --test TestReSynchronization
+          ./ci-test-it.sh --test TestMultiAmfRegistration
+          ./ci-test-it.sh --test TestRequestTwoPDUSessions
+
+      - name: Run basic non3gpp tests
+        run: |
+          ./ci-test-it.sh --test TestN3iwf
+          ./ci-test-it.sh --test TestTngf
+
+      - name: Run basic DC tests
+        run: |
+          ./ci-test-it.sh --test TestDC
+          ./ci-test-it.sh --test TestDynamicDC
+          ./ci-test-it.sh --test TestXnDcHandover
+
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f
+
+  ci-e2e-test:
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Check Command
+        run: |
+          docker --version
+          curl --version
+          jq --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check E2E basic compose
+        run: |
+          docker compose -f "$CI_COMPOSE_E2E_BASIC_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_E2E_BASIC_FILE" down
+
+      - name: Run E2E basic tests
+        run: |
+          ./ci-test-e2e-basic.sh --test TestRegPduCharging
+
+      - name: Check E2E ULCL compose
+        run: |
+          docker compose -f "$CI_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
+          docker compose -f "$CI_COMPOSE_E2E_ULCL_FILE" down
+
+      - name: Run E2E ULCL tests
+        run: |
+          ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence
+          ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe
+
+      - name: Cleanup docker resources
+        if: always()
+        run: |
+          echo "Cleaning up docker resources..."
+          docker system prune -a -f
+          docker volume prune -a -f

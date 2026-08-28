@@ -1,0 +1,72 @@
+package test
+
+import (
+	"test/freeRanUe"
+	"test/pinger"
+	"testing"
+	"time"
+)
+
+var testMpCases = []struct {
+	name        string
+	destination string
+}{
+	{
+		name:        "N6GW",
+		destination: N6GW_IP,
+	},
+	{
+		name:        "MEC",
+		destination: MEC_IP,
+	},
+}
+
+func TestULCLMultiPathUe1(t *testing.T) {
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
+
+	time.Sleep(5 * time.Second)
+
+	for _, testCase := range testMpCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if err := pinger.Pinger(testCase.destination, NIC_1); err != nil {
+				t.Errorf("Ping %s failed: expected ping success, but got %v", testCase.destination, err)
+			}
+		})
+	}
+}
+
+func TestULCLMultiPathUe2(t *testing.T) {
+	fru, err := freeRanUe.NewFreeRanUe()
+	if err != nil {
+		t.Fatalf("Failed to create FreeRanUe: %v", err)
+	}
+	err = fru.Activate()
+	if err != nil {
+		t.Fatalf("Failed to activate FreeRanUe: %v", err)
+	}
+	defer func() {
+		if err := fru.Deactivate(); err != nil {
+			t.Errorf("Failed to deactivate FreeRanUe: %v", err)
+		}
+	}()
+
+	for _, testCase := range testMpCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if err := pinger.Pinger(testCase.destination, NIC_2); err != nil {
+				t.Errorf("Ping %s failed: expected ping success, but got %v", testCase.destination, err)
+			}
+		})
+	}
+}
