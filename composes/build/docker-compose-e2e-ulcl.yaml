@@ -18,10 +18,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/i-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -39,10 +38,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/i-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -60,10 +58,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/i-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -81,10 +78,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/psa-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -101,10 +97,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/psa-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -121,10 +116,9 @@ services:
       context: ../../dockerfiles/nf_upf
       args:
         DEBUG_TOOLS: "false"
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../../config/ulcl/psa-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
-      - ../../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:

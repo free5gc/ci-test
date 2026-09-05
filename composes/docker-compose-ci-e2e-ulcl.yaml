@@ -15,10 +15,9 @@ services:
   free5gc-i-upf-0: # i-upf
     container_name: i-upf-0
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/i-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -33,10 +32,9 @@ services:
   free5gc-i-upf-1: # i-upf
     container_name: i-upf-1
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/i-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -51,10 +49,9 @@ services:
   free5gc-i-upf-2: # i-upf
     container_name: i-upf-2
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/i-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -69,10 +66,9 @@ services:
   free5gc-psa-upf-0: # psa-upf
     container_name: psa-upf-0
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/psa-upfCfg-0.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -86,10 +82,9 @@ services:
   free5gc-psa-upf-1: # psa-upf
     container_name: psa-upf-1
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/psa-upfCfg-1.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
@@ -103,10 +98,9 @@ services:
   free5gc-psa-upf-2: # psa-upf
     container_name: psa-upf-2
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/ulcl/psa-upfCfg-2.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:

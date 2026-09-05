@@ -15,10 +15,9 @@ services:
   free5gc-upf: # upf
     container_name: upf
     image: free5gc/upf:latest
-    command: bash -c "./upf-iptables.sh && ./upf -c ./config/upfcfg.yaml"
+    command: ./upf -c ./config/upfcfg.yaml
     volumes:
       - ../config/upfCfg.yaml:/free5gc/config/upfcfg.yaml
-      - ../config/iptables/upf-iptables.sh:/free5gc/upf-iptables.sh
     cap_add:
       - NET_ADMIN
     networks:
