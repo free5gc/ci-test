@@ -72,6 +72,11 @@ services:
         ipv4_address: 10.100.200.18
     depends_on:
       - free5gc-nrf
+    healthcheck:
+      test: ["CMD", "nc", "-z", "-w", "1", "amf.free5gc.org", "8000"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
 
   free5gc-ausf: # ausf
     container_name: ausf
@@ -288,16 +293,26 @@ services:
       ran-ue:
         ipv4_address: 10.0.2.3
     depends_on:
-      - free5gc-amf
-      - free5gc-ausf
-      - free5gc-chf
-      - free5gc-nrf
-      - free5gc-nssf
-      - free5gc-pcf
-      - free5gc-smf
-      - free5gc-udm
-      - free5gc-udr
-      - free5gc-upf
+      free5gc-amf:
+        condition: service_healthy
+      free5gc-ausf:
+        condition: service_started
+      free5gc-chf:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_started
+      free5gc-nssf:
+        condition: service_started
+      free5gc-pcf:
+        condition: service_started
+      free5gc-smf:
+        condition: service_started
+      free5gc-udm:
+        condition: service_started
+      free5gc-udr:
+        condition: service_started
+      free5gc-upf:
+        condition: service_started
 
   ue:
     container_name: ue

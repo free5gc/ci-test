@@ -13,9 +13,6 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TI_DATA_JSON="$SCRIPT_DIR/json/ti-data.json"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TI_DATA_JSON="$SCRIPT_DIR/json/ti-data.json"
-
 # ti data request
 case "$1" in
     "put")
