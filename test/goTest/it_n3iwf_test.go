@@ -969,4 +969,21 @@ func TestN3iwf(t *testing.T) {
 		t.Fatal("Ping Failed")
 		return
 	}
+
+	t.Log("====== UE Initiated Deregistration ======")
+
+	mobileIdentity5GS = MobileIdentity5GS([]uint8{0xf2, 0x02, 0xf8, 0x39, 0xca, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x01})
+	deregistrationRequest := GetDeregistrationRequest(0x02, 0x01, 0x00, mobileIdentity5GS)
+
+	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, deregistrationRequest,
+		nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
+	if err != nil {
+		t.Fatalf("Failed to encode Deregistration Request with security: %+v", err)
+	}
+
+	if _, err := tcpConnWithN3IWF.Write(pdu); err != nil {
+		t.Fatalf("Failed to write Deregistration Request to TCP connection: %+v", err)
+	}
+
+	t.Log("Deregistration Request sent successfully.")
 }
