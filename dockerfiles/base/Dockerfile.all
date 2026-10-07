@@ -12,8 +12,8 @@ FROM free5gc/base AS my-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Node.js 20 + sudo: needed to build the webconsole frontend (corepack/yarn)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+# Node.js 22 + sudo: needed to build the webconsole frontend (corepack/yarn)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get update \
     && apt-get -y install nodejs sudo \
     && apt-get clean
