@@ -86,7 +86,7 @@ func TestMultiAmfRegistration(t *testing.T) {
 	// Calculate for RES*
 	nasPdu := GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq, "Received wrong GMM message. Expected Authentication Request.")
+	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(), "Received wrong GMM message. Expected Authentication Request.")
 	rand := nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
 
@@ -105,7 +105,7 @@ func TestMultiAmfRegistration(t *testing.T) {
 	require.NotNil(t, ngapPdu)
 	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd, "Received wrong GMM message. Expected Security Mode Command.")
+	require.Equal(t, nasMessage.MsgTypeSecModeCmd, nasPdu.MsgType(), "Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
 	registrationRequestWith5GMM := GetRegistrationRequest(nasIE.RegType_InitialReg,

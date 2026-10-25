@@ -64,7 +64,7 @@ func TestGUTIRegistration(t *testing.T) {
 	// Calculate for RES*
 	nasPdu := GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
+	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Authentication Request.")
 	rand := nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
@@ -84,7 +84,7 @@ func TestGUTIRegistration(t *testing.T) {
 	require.NotNil(t, ngapPdu)
 	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd,
+	require.Equal(t, nasMessage.MsgTypeSecModeCmd, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
@@ -124,8 +124,8 @@ func TestGUTIRegistration(t *testing.T) {
 	assert.Nil(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
-	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapMessage.MessageTypeInitiatingMessage, ngapPdu.MessageType(), "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapPdu.ProcedureCode(), "Not ProcedureCodeDownlinkNASTransport")
 
 	time.Sleep(500 * time.Millisecond)
 
@@ -152,7 +152,7 @@ func TestGUTIRegistration(t *testing.T) {
 	require.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapMsg.ProcedureCode())
 	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeDeregAcceptUEOrig,
+	require.Equal(t, nasMessage.MsgTypeDeregAcceptUEOrig, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Deregistration Accept.")
 
 	// receive ngap UE Context Release Command
@@ -192,7 +192,7 @@ func TestGUTIRegistration(t *testing.T) {
 	require.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapMsg.ProcedureCode())
 	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeIdReq,
+	require.Equal(t, nasMessage.MsgTypeIdReq, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Identity Request.")
 
 	// update AMF UE NGAP ID
@@ -216,7 +216,7 @@ func TestGUTIRegistration(t *testing.T) {
 	require.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapMsg.ProcedureCode())
 	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
+	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Authentication Request.")
 
 	// Calculate for RES* (SQN incremented because network updated SQN after first authentication)
@@ -242,7 +242,7 @@ func TestGUTIRegistration(t *testing.T) {
 	require.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapMsg.ProcedureCode())
 	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd,
+	require.Equal(t, nasMessage.MsgTypeSecModeCmd, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
@@ -280,8 +280,8 @@ func TestGUTIRegistration(t *testing.T) {
 	assert.Nil(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
-	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapMessage.MessageTypeInitiatingMessage, ngapPdu.MessageType(), "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapPdu.ProcedureCode(), "Not ProcedureCodeDownlinkNASTransport")
 
 	time.Sleep(1000 * time.Millisecond)
 }
