@@ -44,6 +44,11 @@ services:
           - nrf.free5gc.org
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "nc", "-z", "-w", "1", "nrf.free5gc.org", "8000"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
 
   free5gc-amf: # amf
     container_name: amf
@@ -62,7 +67,8 @@ services:
           - amf.free5gc.org
         ipv4_address: 10.100.200.18
     depends_on:
-      - free5gc-nrf
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-amf2: # amf
     container_name: amf2
@@ -81,7 +87,8 @@ services:
           - amf2.free5gc.org
         ipv4_address: 10.100.200.180
     depends_on:
-      - free5gc-nrf
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-ausf: # ausf
     container_name: ausf
@@ -99,7 +106,8 @@ services:
         aliases:
           - ausf.free5gc.org
     depends_on:
-      - free5gc-nrf
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-nssf: # nssf
     container_name: nssf
@@ -117,7 +125,8 @@ services:
         aliases:
           - nssf.free5gc.org
     depends_on:
-      - free5gc-nrf
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-pcf: # pcf
     container_name: pcf
@@ -135,7 +144,8 @@ services:
         aliases:
           - pcf.free5gc.org
     depends_on:
-      - free5gc-nrf
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-smf: # smf
     container_name: smf
@@ -154,8 +164,10 @@ services:
         aliases:
           - smf.free5gc.org
     depends_on:
-      - free5gc-nrf
-      - free5gc-upf
+      free5gc-nrf:
+        condition: service_healthy
+      free5gc-upf:
+        condition: service_started
 
   free5gc-udm: # udm
     container_name: udm
@@ -173,8 +185,10 @@ services:
         aliases:
           - udm.free5gc.org
     depends_on:
-      - db
-      - free5gc-nrf
+      db:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-udr: # udr
     container_name: udr
@@ -193,8 +207,10 @@ services:
         aliases:
           - udr.free5gc.org
     depends_on:
-      - db
-      - free5gc-nrf
+      db:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-chf: # chf
     container_name: chf
@@ -213,9 +229,12 @@ services:
         aliases:
           - chf.free5gc.org
     depends_on:
-      - db
-      - free5gc-nrf
-      - free5gc-webui
+      db:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_healthy
+      free5gc-webui:
+        condition: service_started
 
   free5gc-nef: # nef
     container_name: nef
@@ -233,8 +252,10 @@ services:
         aliases:
           - nef.free5gc.org
     depends_on:
-      - db
-      - free5gc-nrf
+      db:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_healthy
 
   free5gc-n3iwf: # n3iwf
     container_name: n3iwf
@@ -298,8 +319,10 @@ services:
       - "2122:2122"
       - "2121:2121"
     depends_on:
-      - db
-      - free5gc-nrf
+      db:
+        condition: service_started
+      free5gc-nrf:
+        condition: service_healthy
 
   it:
     container_name: it
