@@ -49,6 +49,7 @@ func TestULCLTrafficInfluence(t *testing.T) {
 	// flow level ping
 	t.Run("Flow Level Ping", func(t *testing.T) {
 		pingOneOneOneOne(t)
+		pingOneOneOneOne(t)
 	})
 
 	// check charging record
