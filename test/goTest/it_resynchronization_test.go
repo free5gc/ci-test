@@ -64,7 +64,7 @@ func TestReSynchronization(t *testing.T) {
 
 	nasPdu := GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
+	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Authentication Request.")
 
 	// gen AK
@@ -106,7 +106,7 @@ func TestReSynchronization(t *testing.T) {
 
 	nasPdu = GetNasPdu(ue, ngapMsg.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeAuthReq,
+	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Authentication Request.")
 	rand = nasPdu.(*nasMessage.AuthReq).AuthParamRAND5GAuthChlg.Rand
 
@@ -133,7 +133,7 @@ func TestReSynchronization(t *testing.T) {
 	require.NotNil(t, ngapPdu)
 	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
-	require.Equal(t, nasPdu.MsgType(), nasMessage.MsgTypeSecModeCmd,
+	require.Equal(t, nasMessage.MsgTypeSecModeCmd, nasPdu.MsgType(),
 		"Received wrong GMM message. Expected Security Mode Command.")
 
 	// send NAS Security Mode Complete
@@ -173,8 +173,8 @@ func TestReSynchronization(t *testing.T) {
 	assert.Nil(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
 	assert.Nil(t, err)
-	assert.Equal(t, ngapPdu.MessageType(), ngapMessage.MessageTypeInitiatingMessage, "Not MessageTypeInitiatingMessage")
-	assert.Equal(t, ngapPdu.ProcedureCode(), ngapMessage.ProcedureCodeDownlinkNASTransport, "Not ProcedureCodeDownlinkNASTransport")
+	assert.Equal(t, ngapMessage.MessageTypeInitiatingMessage, ngapPdu.MessageType(), "Not MessageTypeInitiatingMessage")
+	assert.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapPdu.ProcedureCode(), "Not ProcedureCodeDownlinkNASTransport")
 
 	time.Sleep(100 * time.Millisecond)
 
