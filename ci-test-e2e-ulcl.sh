@@ -21,14 +21,11 @@ TARGET_COMPOSE_FILE="$CI_COMPOSE_FILE"
 TARGET_TIMEOUT="$CI_TIMEOUT"
 TARGET_TEST=""
 
-BUILD=""
-
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -b|--build)
             TARGET_COMPOSE_FILE="$COMPOSE_FILE"
             TARGET_TIMEOUT="$TIMEOUT"
-            BUILD="--build"
             shift
             ;;
         -t|--test)
@@ -53,8 +50,10 @@ docker compose -f "$TARGET_COMPOSE_FILE" down --remove-orphans -v || true
 docker rm -f mongodb ci-mongodb 2>/dev/null || true
 
 # Up the containers using the selected compose file
-if ! docker compose -f "$TARGET_COMPOSE_FILE" up "$BUILD" -d --wait --wait-timeout "$TARGET_TIMEOUT"; then
+if ! docker compose -f "$TARGET_COMPOSE_FILE" up -d --wait --wait-timeout "$TARGET_TIMEOUT"; then
     echo "Error: Failed to start containers using $TARGET_COMPOSE_FILE"
+    docker compose -f "$TARGET_COMPOSE_FILE" logs
+    docker compose -f "$TARGET_COMPOSE_FILE" down --remove-orphans -v || true
     exit 1
 fi
 
