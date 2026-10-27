@@ -655,15 +655,13 @@ func TestN3iwf(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	nasEnv := make([]byte, 65535)
-
-	n, err = tcpConnWithN3IWF.Read(nasEnv)
+	nasEnv, err := ReadNasEnvelope(tcpConnWithN3IWF)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 
-	nasEnv, n, err = DecapNasPduFromEnvelope(nasEnv[:n])
+	nasEnv, n, err = DecapNasPduFromEnvelope(nasEnv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -834,19 +832,17 @@ func TestN3iwf(t *testing.T) {
 	}
 
 	// Reference test's own TODO: UE Configuration Update Command content isn't checked.
-	if n, err := tcpConnWithN3IWF.Read(buffer); err != nil {
+	if _, err := ReadNasEnvelope(tcpConnWithN3IWF); err != nil {
 		t.Fatalf("No UeConfigUpdate Message: %+v", err)
-	} else {
-		_ = n
 	}
 
 	var pduAddress net.IP
 
 	// Read NAS from N3IWF
-	if n, err := tcpConnWithN3IWF.Read(buffer); err != nil {
+	if nasEnv, err := ReadNasEnvelope(tcpConnWithN3IWF); err != nil {
 		t.Fatalf("Read NAS Message Fail:%+v", err)
 	} else {
-		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, n, buffer)
+		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, len(nasEnv), nasEnv)
 		if err != nil {
 			t.Fatalf("DecodePDUSessionEstablishmentAccept Fail: %+v", err)
 		}
