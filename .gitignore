@@ -32,3 +32,6 @@ note.md
 
 # cert
 cert/*.pem
+
+# test logs
+log/

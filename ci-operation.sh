@@ -37,6 +37,9 @@ E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
 IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf"
 
+# one timestamp per ci-operation run, so all tests in a batch log under the same folder
+RUN_DATETIME="$(date +%Y%m%d-%H%M%S)"
+
 main() {
     if [ $# -ne 1 ] && [ $# -ne 2 ] && [ $# -ne 3 ]; then
         usage
@@ -96,12 +99,12 @@ main() {
         "test")
             case "$2" in
                 "it")
-                    ./ci-test-it.sh --test $3 --build
+                    ./ci-test-it.sh --test $3 --build --log "$RUN_DATETIME"
                 ;;
                 "it-all")
                     for test in $(echo $IT_TEST_POOL | tr "|" "\n")
                     do
-                        if ./ci-test-it.sh --test $test --build
+                        if ./ci-test-it.sh --test $test --build --log "$RUN_DATETIME"
                         then
                             echo "Test $test passed"
                             echo
@@ -113,11 +116,11 @@ main() {
                     done
                 ;;
                 "basic")
-                    ./ci-test-e2e-basic.sh --test TestRegPduCharging --build
+                    ./ci-test-e2e-basic.sh --test TestRegPduCharging --build --log "$RUN_DATETIME"
                 ;;
                 "ulcl")
-                    ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence --build
-                    ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe --build
+                    ./ci-test-e2e-ulcl.sh --test TestULCLTrafficInfluence --build --log "$RUN_DATETIME"
+                    ./ci-test-e2e-ulcl.sh --test TestULCLMultiPathUe --build --log "$RUN_DATETIME"
                 ;;
                 *)
                     usage
