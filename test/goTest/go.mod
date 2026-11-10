@@ -16,7 +16,7 @@ require (
 	github.com/free5gc/sctp v1.2.0
 	github.com/free5gc/util v1.4.0
 	github.com/free5gc/webconsole v1.4.6-0.20260819161303-1b916d227eab
-	github.com/go-ping/ping v1.1.0
+	github.com/go-ping/ping v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/pkg/errors v0.9.1
