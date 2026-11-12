@@ -10,7 +10,7 @@ require (
 	github.com/free-ran-ue/free-ran-ue/v2 v2.5.0
 	github.com/free-ran-ue/util v0.1.0
 	github.com/free5gc/ike v1.2.1
-	github.com/free5gc/nas v1.3.0
+	github.com/free5gc/nas v1.3.1
 	github.com/free5gc/ngap v1.2.0
 	github.com/free5gc/openapi v1.3.0
 	github.com/free5gc/sctp v1.2.0
