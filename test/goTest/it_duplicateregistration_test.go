@@ -152,8 +152,14 @@ func TestDuplicateRegistration(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	// send PDU Session Establishment Request again to trigger duplicate handling
-	_, err = n2Conn.Write(pduSessionEstablishmentRequestMsg)
+	// send PDU Session Establishment Request again to trigger duplicate handling;
+	// it is encoded again, since the AMF accepts each uplink NAS COUNT only once
+	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasIE.ReqType_InitialReq, "internet", &sNssai)
+	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
+	require.Nil(t, err)
+	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
+	require.Nil(t, err)
+	_, err = n2Conn.Write(sendMsg)
 	require.Nil(t, err)
 
 	// send PDU Session Resource Release Response
