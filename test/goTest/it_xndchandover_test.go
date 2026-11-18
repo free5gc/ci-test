@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/free5gc/ngap/aper"
 	nasIE "github.com/free5gc/nas/ie"
 	nasMessage "github.com/free5gc/nas/message"
 	ngapIE "github.com/free5gc/ngap/ie"
@@ -223,6 +222,11 @@ func TestXnDCHandover(t *testing.T) {
 		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodePDUSessionResourceSetup,
 		"No PDU Session Resource Setup Request received.")
 
+	// The UPF ends of the N3 tunnels: the UL NG-U UP TNL Information for the master
+	// RAN, the Additional UL NG-U UP TNL Information for the secondary RAN. Their TEIDs
+	// are allocated by the SMF or, when the UPF advertises FTUP, chosen by the UPF.
+	mranUlTeid, sranUlTeid := ulTeidsFromPDUSessionResourceSetupRequest(t, ngapPdu)
+
 	// send ngap PDU Session Resource Setup Response with DC (splits QoS flow to master + secondary RAN)
 	mranDlTeid := "\x00\x00\x00\x01"
 	sranDlTeid := "\x00\x00\x00\x02"
@@ -235,10 +239,10 @@ func TestXnDCHandover(t *testing.T) {
 
 	// ping test via master and secondary RAN before handover
 	t.Run("ping test via master RAN", func(t *testing.T) {
-		icmpTestDC(t, mupfConn, "00000002", EIGHT_IP, false)
+		icmpTestDC(t, mupfConn, mranUlTeid, EIGHT_IP, false)
 	})
 	t.Run("ping test via secondary RAN", func(t *testing.T) {
-		icmpTestDC(t, supfConn, "00000003", ONE_IP, false)
+		icmpTestDC(t, supfConn, sranUlTeid, ONE_IP, false)
 	})
 
 	// ============================================
@@ -273,16 +277,16 @@ func TestXnDCHandover(t *testing.T) {
 		err = ngapIE.UnmarshalBinary([]byte(*item.PathSwitchRequestAcknowledgeTransfer), &transfer)
 		require.Nil(t, err)
 
-		ulTunnel := transfer.ULNGUUPTNLInformation.Choice.(*ngapIE.GTPTunnel)
-		assert.Equal(t, aper.OctetString("\x00\x00\x00\x02"), ulTunnel.GTPTEID.Value,
+		// The UPF ends do not move: the new master RAN takes the session's UL tunnel,
+		// the new secondary RAN the split tunnel's.
+		assert.Equal(t, mranUlTeid, gtpTeidHex(t, transfer.ULNGUUPTNLInformation),
 			"unexpected UL TEID for new master RAN")
 
 		if transfer.IEExtensions != nil {
 			for _, ieExt := range transfer.IEExtensions.List {
 				if ieExt.Id.Value == ngapIE.ProtocolIEIDAdditionalNGUUPTNLInformation {
 					additionalUlInfo := ieExt.AdditionalNGUUPTNLInformation.List[0].ULNGUUPTNLInformation
-					additionalTunnel := additionalUlInfo.Choice.(*ngapIE.GTPTunnel)
-					assert.Equal(t, aper.OctetString("\x00\x00\x00\x03"), additionalTunnel.GTPTEID.Value,
+					assert.Equal(t, sranUlTeid, gtpTeidHex(t, additionalUlInfo),
 						"unexpected UL TEID for new secondary RAN")
 				}
 			}
@@ -296,9 +300,9 @@ func TestXnDCHandover(t *testing.T) {
 	// ping test via new master RAN (original secondary RAN's socket) and new secondary
 	// RAN (original master RAN's socket) after handover
 	t.Run("ping test via new master RAN (original secondary RAN)", func(t *testing.T) {
-		icmpTestDC(t, supfConn, "00000002", EIGHT_IP, false)
+		icmpTestDC(t, supfConn, mranUlTeid, EIGHT_IP, false)
 	})
 	t.Run("ping test via new secondary RAN (original master RAN)", func(t *testing.T) {
-		icmpTestDC(t, mupfConn, "00000003", ONE_IP, false)
+		icmpTestDC(t, mupfConn, sranUlTeid, ONE_IP, false)
 	})
 }

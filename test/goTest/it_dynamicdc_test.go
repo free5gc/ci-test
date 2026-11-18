@@ -192,6 +192,12 @@ func TestDynamicDC(t *testing.T) {
 		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodePDUSessionResourceSetup,
 		"No PDU Session Resource Setup Request received.")
 
+	// The UPF ends of the N3 tunnels: the UL NG-U UP TNL Information for the master
+	// RAN, the Additional UL NG-U UP TNL Information for a split to the secondary RAN.
+	// Their TEIDs are allocated by the SMF or, when the UPF advertises FTUP, chosen by
+	// the UPF.
+	mranUlTeid, sranUlTeid := ulTeidsFromPDUSessionResourceSetupRequest(t, ngapPdu)
+
 	// send ngap PDU Session Resource Setup Response (no DC yet — plain, master-only response)
 	sendMsg, err = GetPDUSessionResourceSetupResponse(10, ue.AmfUeNgapId, ue.RanUeNgapId, IT_IP)
 	assert.Nil(t, err)
@@ -207,12 +213,12 @@ func TestDynamicDC(t *testing.T) {
 	// mapping yet so its uplink probe should get no reply.
 	t.Run("ping test before DC is enabled", func(t *testing.T) {
 		t.Run("ping test via master RAN", func(t *testing.T) {
-			icmpTestDC(t, mupfConn, "00000002", EIGHT_IP, false)
-			icmpTestDC(t, mupfConn, "00000002", ONE_IP, false)
+			icmpTestDC(t, mupfConn, mranUlTeid, EIGHT_IP, false)
+			icmpTestDC(t, mupfConn, mranUlTeid, ONE_IP, false)
 		})
 
 		t.Run("ping test via secondary RAN", func(t *testing.T) {
-			icmpTestDC(t, supfConn, "00000003", ONE_IP, true)
+			icmpTestDC(t, supfConn, sranUlTeid, ONE_IP, true)
 		})
 	})
 
@@ -238,17 +244,23 @@ func TestDynamicDC(t *testing.T) {
 	if modifyConfirm.PDUSessionResourceFailedToModifyListModCfm != nil {
 		t.Fatalf("PDU session modify indication (enable DC) failed")
 	}
+	// The confirm of the split gives the session's UL tunnel and the split tunnel's UL
+	// (TS 23.502 4.14.1): the same UPF ends as the PDU Session Resource Setup Request.
+	cfmUlTeid, cfmSplitUlTeid := ulTeidsFromPDUSessionResourceModifyConfirm(t, modifyConfirm)
+	require.Equal(t, mranUlTeid, cfmUlTeid, "UL TEID of the master RAN changed by the split")
+	require.Equal(t, sranUlTeid, cfmSplitUlTeid,
+		"UL TEID of the split differs from the Additional UL NG-U UP TNL Information")
 
 	time.Sleep(1 * time.Second)
 
 	// ping test after DC is enabled: both master and secondary RAN should now work.
 	t.Run("ping test after DC is enabled", func(t *testing.T) {
 		t.Run("ping test via master RAN", func(t *testing.T) {
-			icmpTestDC(t, mupfConn, "00000002", EIGHT_IP, false)
+			icmpTestDC(t, mupfConn, mranUlTeid, EIGHT_IP, false)
 		})
 
 		t.Run("ping test via secondary RAN", func(t *testing.T) {
-			icmpTestDC(t, supfConn, "00000003", ONE_IP, false)
+			icmpTestDC(t, supfConn, sranUlTeid, ONE_IP, false)
 		})
 	})
 
@@ -274,6 +286,8 @@ func TestDynamicDC(t *testing.T) {
 	if modifyConfirm.PDUSessionResourceFailedToModifyListModCfm != nil {
 		t.Fatalf("PDU session modify indication (disable DC) failed")
 	}
+	cfmUlTeid, _ = ulTeidsFromPDUSessionResourceModifyConfirm(t, modifyConfirm)
+	require.Equal(t, mranUlTeid, cfmUlTeid, "UL TEID of the master RAN changed by the end of the split")
 
 	time.Sleep(1 * time.Second)
 
@@ -281,12 +295,12 @@ func TestDynamicDC(t *testing.T) {
 	// is gone again so its uplink probe should get no reply.
 	t.Run("ping test after DC is disabled", func(t *testing.T) {
 		t.Run("ping test via master RAN", func(t *testing.T) {
-			icmpTestDC(t, mupfConn, "00000002", EIGHT_IP, false)
-			icmpTestDC(t, mupfConn, "00000002", ONE_IP, false)
+			icmpTestDC(t, mupfConn, mranUlTeid, EIGHT_IP, false)
+			icmpTestDC(t, mupfConn, mranUlTeid, ONE_IP, false)
 		})
 
 		t.Run("ping test via secondary RAN", func(t *testing.T) {
-			icmpTestDC(t, supfConn, "00000003", ONE_IP, true)
+			icmpTestDC(t, supfConn, sranUlTeid, ONE_IP, true)
 		})
 	})
 }

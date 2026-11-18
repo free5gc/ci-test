@@ -9,6 +9,7 @@ import (
 
 	nasIE "github.com/free5gc/nas/ie"
 	nasMessage "github.com/free5gc/nas/message"
+	ngapIE "github.com/free5gc/ngap/ie"
 	ngapMessage "github.com/free5gc/ngap/message"
 	"github.com/free5gc/openapi/models"
 	"github.com/stretchr/testify/assert"
@@ -259,6 +260,11 @@ func TestDC(t *testing.T) {
 		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodePDUSessionResourceSetup,
 		"No PDU Session Resource Setup Request received.")
 
+	// The UPF ends of the N3 tunnels: the UL NG-U UP TNL Information for the master
+	// RAN, the Additional UL NG-U UP TNL Information for the secondary RAN. Their TEIDs
+	// are allocated by the SMF or, when the UPF advertises FTUP, chosen by the UPF.
+	mranUlTeid, sranUlTeid := ulTeidsFromPDUSessionResourceSetupRequest(t, ngapPdu)
+
 	// send ngap PDU Session Resource Setup Response with DC (splits QoS flow to master + secondary RAN)
 	mranDlTeid := "\x00\x00\x00\x01"
 	sranDlTeid := "\x00\x00\x00\x02"
@@ -271,11 +277,77 @@ func TestDC(t *testing.T) {
 
 	// ping test via master RAN
 	t.Run("ping test via master RAN", func(t *testing.T) {
-		icmpTestDC(t, mupfConn, "00000002", EIGHT_IP, false)
+		icmpTestDC(t, mupfConn, mranUlTeid, EIGHT_IP, false)
 	})
 
 	// ping test via secondary RAN
 	t.Run("ping test via secondary RAN", func(t *testing.T) {
-		icmpTestDC(t, supfConn, "00000003", ONE_IP, false)
+		icmpTestDC(t, supfConn, sranUlTeid, ONE_IP, false)
 	})
+}
+
+// ulTeidsFromPDUSessionResourceSetupRequest returns, as hex strings for icmpTestDC,
+// the TEIDs of the UL NG-U UP TNL Information and of the Additional UL NG-U UP TNL
+// Information of the request's first PDU session (TS 38.413 9.3.4.1).
+func ulTeidsFromPDUSessionResourceSetupRequest(t *testing.T, ngapPdu ngapMessage.Message) (string, string) {
+	t.Helper()
+	req, ok := ngapPdu.(*ngapMessage.PDUSessionResourceSetupRequest)
+	require.True(t, ok, "not a PDU Session Resource Setup Request")
+	require.NotNil(t, req.PDUSessionResourceSetupListSUReq)
+	require.NotEmpty(t, req.PDUSessionResourceSetupListSUReq.List)
+	item := req.PDUSessionResourceSetupListSUReq.List[0]
+	require.NotNil(t, item.PDUSessionResourceSetupRequestTransfer)
+
+	var transfer ngapIE.PDUSessionResourceSetupRequestTransfer
+	err := ngapIE.UnmarshalBinary([]byte(*item.PDUSessionResourceSetupRequestTransfer), &transfer)
+	require.Nil(t, err)
+
+	var mranUlTeid, sranUlTeid string
+	for _, protocolIE := range transfer.ProtocolIEs.List {
+		if protocolIE.ULNGUUPTNLInformation != nil {
+			mranUlTeid = gtpTeidHex(t, protocolIE.ULNGUUPTNLInformation)
+		}
+		if additional := protocolIE.AdditionalULNGUUPTNLInformation; additional != nil {
+			require.NotEmpty(t, additional.List)
+			sranUlTeid = gtpTeidHex(t, additional.List[0].NGUUPTNLInformation)
+		}
+	}
+	require.NotEmpty(t, mranUlTeid, "no UL NG-U UP TNL Information")
+	require.NotEmpty(t, sranUlTeid, "no Additional UL NG-U UP TNL Information")
+	return mranUlTeid, sranUlTeid
+}
+
+// ulTeidsFromPDUSessionResourceModifyConfirm returns, as hex strings for icmpTestDC,
+// the TEIDs of the UL NG-U UP TNL Information and, when the confirm carries one (a
+// split of the session), of the UL of the Additional NG-U UP TNL Information of the
+// confirm's first PDU session (TS 38.413 9.3.4.7); "" for none.
+func ulTeidsFromPDUSessionResourceModifyConfirm(
+	t *testing.T, confirm *ngapMessage.PDUSessionResourceModifyConfirm,
+) (string, string) {
+	t.Helper()
+	require.NotNil(t, confirm.PDUSessionResourceModifyListModCfm)
+	require.NotEmpty(t, confirm.PDUSessionResourceModifyListModCfm.List)
+	item := confirm.PDUSessionResourceModifyListModCfm.List[0]
+	require.NotNil(t, item.PDUSessionResourceModifyConfirmTransfer)
+
+	var transfer ngapIE.PDUSessionResourceModifyConfirmTransfer
+	err := ngapIE.UnmarshalBinary([]byte(*item.PDUSessionResourceModifyConfirmTransfer), &transfer)
+	require.Nil(t, err)
+
+	ulTeid := gtpTeidHex(t, transfer.ULNGUUPTNLInformation)
+	splitUlTeid := ""
+	if additional := transfer.AdditionalNGUUPTNLInformation; additional != nil && len(additional.List) > 0 {
+		splitUlTeid = gtpTeidHex(t, additional.List[0].ULNGUUPTNLInformation)
+	}
+	return ulTeid, splitUlTeid
+}
+
+// gtpTeidHex is the TEID of a GTP tunnel, as a hex string for icmpTestDC.
+func gtpTeidHex(t *testing.T, info *ngapIE.UPTransportLayerInformation) string {
+	t.Helper()
+	require.NotNil(t, info)
+	tunnel, isGTP := info.Choice.(*ngapIE.GTPTunnel)
+	require.True(t, isGTP, "UP transport layer information is not a GTP tunnel")
+	require.Len(t, tunnel.GTPTEID.Value, 4)
+	return hex.EncodeToString(tunnel.GTPTEID.Value)
 }
