@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/free5gc/nas/ie"
@@ -138,6 +139,23 @@ func DecapNasPduFromEnvelope(envelop []byte) ([]byte, int, error) {
 	copy(nasMsg, envelop[2:2+nasLen])
 
 	return nasMsg, int(nasLen), nil
+}
+
+// ReadNasEnvelope reads exactly one NAS message envelope (TS 24.502 9.4) from the NAS
+// TCP connection with N3IWF/TNGF and returns it, length field included. TCP does not
+// keep message boundaries: a single Read can return two envelopes that arrived close
+// together, such as the UE Configuration Update Command and the PDU Session
+// Establishment Accept, or only part of one.
+func ReadNasEnvelope(conn io.Reader) ([]byte, error) {
+	envelope := make([]byte, 2)
+	if _, err := io.ReadFull(conn, envelope); err != nil {
+		return nil, err
+	}
+	envelope = append(envelope, make([]byte, binary.BigEndian.Uint16(envelope))...)
+	if _, err := io.ReadFull(conn, envelope[2:]); err != nil {
+		return nil, err
+	}
+	return envelope, nil
 }
 
 // EncodeNasPduWithSecurity takes an already-built plain NAS PDU (as produced by

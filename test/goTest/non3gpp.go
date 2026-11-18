@@ -752,10 +752,10 @@ func sendPduSessionEstablishmentRequest(
 	var pduAddr net.IP
 
 	// Read NAS from N3IWF
-	if n, err := nasConn.Read(buffer); err != nil {
+	if nasEnv, err := ReadNasEnvelope(nasConn); err != nil {
 		return ifaces, fmt.Errorf("Read NAS Message Fail:%+v", err)
 	} else {
-		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, n, buffer)
+		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, len(nasEnv), nasEnv)
 		if err != nil {
 			t.Errorf("DecodePDUSessionEstablishmentAccept Fail: %+v", err)
 		}

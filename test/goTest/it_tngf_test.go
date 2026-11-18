@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"math/big"
 	"net"
 	"strings"
@@ -38,18 +39,17 @@ const tngfFixedRadiusAuthenticator = "ea408c3a615fc82899bb8f2fa2e374e9"
 func tngfReadPDUSessionEstablishmentAccept(
 	t *testing.T,
 	ue *RanUeContext,
-	conn interface{ Read([]byte) (int, error) },
-	buffer []byte,
+	conn io.Reader,
 ) (*nasMessage.PDUSessEstAccept, error) {
 	t.Helper()
 
 	for i := 0; i < 4; i++ {
-		n, err := conn.Read(buffer)
+		nasEnv, err := ReadNasEnvelope(conn)
 		if err != nil {
 			return nil, fmt.Errorf("Read NAS Message Fail:%+v", err)
 		}
 
-		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, n, buffer)
+		nasMsg, err := DecodePDUSessionEstablishmentAccept(ue, len(nasEnv), nasEnv)
 		if err == nil {
 			return nasMsg, nil
 		}
@@ -611,12 +611,11 @@ func TestTngf(t *testing.T) {
 	t.Log("Establish TCP connection with TNGF successfully")
 	tcpConnWithTNGF.SetReadDeadline(time.Now().Add(20 * time.Second))
 
-	nasEnv := make([]byte, 65535)
-	n, err = tcpConnWithTNGF.Read(nasEnv)
+	nasEnv, err := ReadNasEnvelope(tcpConnWithTNGF)
 	if err != nil {
 		t.Fatal(err)
 	}
-	nasEnv, n, err = DecapNasPduFromEnvelope(nasEnv[:n])
+	nasEnv, n, err = DecapNasPduFromEnvelope(nasEnv)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -771,7 +770,7 @@ func TestTngf(t *testing.T) {
 	}
 
 	var pduAddress net.IP
-	pduSessionAccept, err := tngfReadPDUSessionEstablishmentAccept(t, ue, tcpConnWithTNGF, buffer)
+	pduSessionAccept, err := tngfReadPDUSessionEstablishmentAccept(t, ue, tcpConnWithTNGF)
 	if err != nil {
 		t.Fatal(err)
 	}
