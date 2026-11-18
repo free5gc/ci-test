@@ -29,8 +29,8 @@ github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/free-ran-ue/free-ran-ue/v2 v2.5.0 h1:ZKrSbBTp8Aag7aCPqnyqSKK8qDYxtD4SgurssJ/zRgs=
 github.com/free-ran-ue/free-ran-ue/v2 v2.5.0/go.mod h1:f+HWzyvmQ1wf4iYWoPwxsZ+la2HOlr9wfSDp/f1/obo=
-github.com/free-ran-ue/util v0.2.0 h1:3YxyVaKBn6lAQActu1P7JGnrGpfS5keQsyCuNydNfjc=
-github.com/free-ran-ue/util v0.2.0/go.mod h1:wfKg76AHnnUPKehdWB+oJ+Tv8bUy67+2c7J1Qx/YZrA=
+github.com/free-ran-ue/util v0.2.1 h1:hNZkhM/NBc45t4ZMGtisA7wi10Wy76lLoa0WuazMtX8=
+github.com/free-ran-ue/util v0.2.1/go.mod h1:TbUw26gkZxrd414ZyGinDBNzYOJpctI7gkDOJg9UkBA=
 github.com/free5gc/chf v1.2.6-0.20260819160712-4e06244b5612 h1:B28Kfir2Glbc76iYDd9byhqY0Rsyv32+h1eJAt1jWo4=
 github.com/free5gc/chf v1.2.6-0.20260819160712-4e06244b5612/go.mod h1:2XC+DdZTpXdzL4Tog24FfGmISa11514B34vhd8ptn6o=
 github.com/free5gc/ike v1.2.1 h1:xmC6CAfffuge6wgeeT8XDdzDEeTobiLoKHzi5QMY7Dk=
