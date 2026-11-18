@@ -341,7 +341,7 @@ func GetRegistrationRequest(
 func GetPduSessionEstablishmentRequest(pduSessionId uint8) []byte {
 	m := &message.PDUSessEstReq{
 		PDUSessId: pduSessionId,
-		PTI:       0x00,
+		PTI:       0x01,
 		IntegrityProtectionMaxDataRate: &ie.IntegrityProtectionMaxDataRate{
 			Uplink:   0xff,
 			Downlink: 0xff,
@@ -383,7 +383,7 @@ func GetUlNasTransport_PduSessionModificationRequest(pduSessionId uint8, request
 func GetPduSessionModificationRequest(pduSessionId uint8) []byte {
 	return marshalNasMsg(&message.PDUSessModReq{
 		PDUSessId: pduSessionId,
-		PTI:       0x00,
+		PTI:       0x01,
 	})
 }
 
@@ -406,7 +406,7 @@ func GetPduSessionModificationCommandReject(pduSessionId uint8) []byte {
 func GetPduSessionReleaseRequest(pduSessionId uint8) []byte {
 	return marshalNasMsg(&message.PDUSessRelReq{
 		PDUSessId: pduSessionId,
-		PTI:       0x00,
+		PTI:       0x01,
 	})
 }
 
