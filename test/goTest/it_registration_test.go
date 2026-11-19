@@ -1,6 +1,9 @@
 package test
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"testing"
 	"time"
 
@@ -8,7 +11,6 @@ import (
 	nasMessage "github.com/free5gc/nas/message"
 	ngapMessage "github.com/free5gc/ngap/message"
 	"github.com/free5gc/openapi/models"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,21 +24,21 @@ func TestRegistration(t *testing.T) {
 
 	// RAN connect to AMF
 	n2Conn, err := connectToAmf(AMF_IP, IT_IP, AMF_PORT, IT_N2_PORT)
-	assert.Nil(t, err, "connect to AMF failed: %+v", err)
+	require.NoError(t, err, "connect to AMF failed: %+v", err)
 	defer n2Conn.Close()
 
 	// send NGSetupRequest
 	sendMsg, err = GetNGSetupRequest([]byte(IT_GNB_ID), 24, "free5GC")
-	assert.Nil(t, err, "get NGSetupRequest failed: %+v", err)
+	require.NoError(t, err, "get NGSetupRequest failed: %+v", err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err, "send NGSetupRequest failed: %+v", err)
+	require.NoError(t, err, "send NGSetupRequest failed: %+v", err)
 
 	// receive NGSetupResponse
 	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	ngapPdu, err := ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeSuccessfulOutcome &&
+	require.NoError(t, err)
+	require.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeSuccessfulOutcome &&
 		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodeNGSetup, "No NGSetupResponse received.")
 
 	// New UE
@@ -52,18 +54,19 @@ func TestRegistration(t *testing.T) {
 	registrationRequest := GetRegistrationRequest(
 		nasIE.RegType_InitialReg, mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
 	sendMsg, err = GetInitialUEMessage(ue.RanUeNgapId, registrationRequest, "")
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// receive Authentication Request
 	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage, "No NGAP Initiating Message received.")
+	require.NoError(t, err)
+	require.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage, "No NGAP Initiating Message received.")
 
 	// Calcute for RES*
+	require.IsType(t, (*ngapMessage.DownlinkNASTransport)(nil), ngapPdu)
 	nasPdu := GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
 	require.Equal(t, nasMessage.MsgTypeAuthReq, nasPdu.MsgType(), "Received wrong GMM message. Expected Authentication Request.")
@@ -73,16 +76,16 @@ func TestRegistration(t *testing.T) {
 	// send Authentication Response
 	pdu := GetAuthenticationResponse(resStat, "")
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// receive Security Mode Command
 	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.NotNil(t, ngapPdu)
+	require.NoError(t, err)
+	require.IsType(t, (*ngapMessage.DownlinkNASTransport)(nil), ngapPdu)
 	nasPdu = GetNasPdu(ue, ngapPdu.(*ngapMessage.DownlinkNASTransport))
 	require.NotNil(t, nasPdu)
 	require.Equal(t, nasMessage.MsgTypeSecModeCmd, nasPdu.MsgType(), "Received wrong GMM message. Expected Security Mode Command.")
@@ -92,44 +95,38 @@ func TestRegistration(t *testing.T) {
 		nasIE.RegType_InitialReg, mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = GetSecurityModeComplete(registrationRequestWith5GMM)
 	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCipheredWithNew5gNasSecCtx, true, true)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// receive ngap.InitialContextSetupRequest
 	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage &&
+	require.NoError(t, err)
+	require.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage &&
 		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodeInitialContextSetup, "No InitialContextSetup received.")
+
+	setup := ngapPdu.(*ngapMessage.InitialContextSetupRequest)
+	require.NotNil(t, setup.NASPDU)
+	acceptPDU := setup.NASPDU.Value
+	require.NotEmpty(t, acceptPDU)
+	require.NotEqual(t, nasMessage.SecHdrTypePlainNas, nasMessage.GetSecHdrType(acceptPDU))
+	accepted, err := nasMessage.Parse(acceptPDU, ue.NewSecCtx())
+	require.NoError(t, err)
+	require.IsType(t, (*nasMessage.RegAccept)(nil), accepted)
 
 	// send InitialContextSetupResponse
 	sendMsg, err = GetInitialContextSetupResponse(ue.AmfUeNgapId, ue.RanUeNgapId)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
-	// send NAS Registration Complete
-	pdu = GetRegistrationComplete(nil)
-	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
-	assert.Nil(t, err)
-	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
-	assert.Nil(t, err)
-	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
-
-	// receive UE Configuration Update Command
-	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
-	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.Equal(t, ngapMessage.MessageTypeInitiatingMessage, ngapPdu.MessageType(), "Not MessageTypeInitiatingMessage")
-	assert.Equal(t, ngapMessage.ProcedureCodeDownlinkNASTransport, ngapPdu.ProcedureCode(), "Not ProcedureCodeDownlinkNASTransport")
-
-	time.Sleep(100 * time.Millisecond)
+	// Registration Accept may already be queued for retransmission when the
+	// AMF receives Registration Complete. Consume the actual NAS exchange.
+	require.NoError(t, completeRegistration(n2Conn, ue, acceptPDU))
 
 	// send GetPduSessionEstablishmentRequest
 	sNssai := models.Snssai{
@@ -138,25 +135,102 @@ func TestRegistration(t *testing.T) {
 	}
 	pdu = GetUlNasTransport_PduSessionEstablishmentRequest(10, nasIE.ReqType_InitialReq, "internet", &sNssai)
 	pdu, err = EncodeNasPduWithSecurity(ue, pdu, nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	sendMsg, err = GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// receive PDU session Resource Setup Request
 	n, err = n2Conn.Read(recvMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	ngapPdu, err = ngapMessage.Parse(recvMsg[:n])
-	assert.Nil(t, err)
-	assert.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage &&
-		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodePDUSessionResourceSetup, "No PDUSessionResourceSetup received.")
+	require.NoError(t, err)
+	require.True(t, ngapPdu.MessageType() == ngapMessage.MessageTypeInitiatingMessage &&
+		ngapPdu.ProcedureCode() == ngapMessage.ProcedureCodePDUSessionResourceSetup, "expected PDU session resource setup, got %T", ngapPdu)
 
 	// send PDU session Resource Setup Response
 	sendMsg, err = GetPDUSessionResourceSetupResponse(10, ue.AmfUeNgapId, ue.RanUeNgapId, IT_IP)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	_, err = n2Conn.Write(sendMsg)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
+}
+
+// completeRegistration acknowledges each Registration Accept and waits for
+// the Configuration Update Command before starting a PDU session.
+func completeRegistration(conn io.ReadWriter, ue *RanUeContext, lastAccept []byte) error {
+	const maxRetransmissions = 4
+	lastAccept = bytes.Clone(lastAccept)
+	buf := make([]byte, 2048)
+	if err := sendRegistrationComplete(conn, ue); err != nil {
+		return err
+	}
+	for attempt := 0; attempt <= maxRetransmissions; attempt++ {
+		n, err := conn.Read(buf)
+		if err != nil {
+			return err
+		}
+		msg, err := ngapMessage.Parse(buf[:n])
+		if err != nil {
+			return err
+		}
+		dl, ok := msg.(*ngapMessage.DownlinkNASTransport)
+		if !ok {
+			return fmt.Errorf("waiting for configuration update: unexpected NGAP %T", msg)
+		}
+		if dl.AMFUENGAPID == nil || dl.AMFUENGAPID.Value != ue.AmfUeNgapId ||
+			dl.RANUENGAPID == nil || dl.RANUENGAPID.Value != ue.RanUeNgapId {
+			return fmt.Errorf("downlink NAS transport for unexpected UE")
+		}
+		if dl.NASPDU == nil || len(dl.NASPDU.Value) == 0 {
+			return fmt.Errorf("missing downlink NAS payload")
+		}
+		// A queued copy of the already verified NAS PDU has the same COUNT.
+		// Discard it without advancing the security context a second time.
+		if bytes.Equal(dl.NASPDU.Value, lastAccept) {
+			continue
+		}
+		if nasMessage.GetSecHdrType(dl.NASPDU.Value) == nasMessage.SecHdrTypePlainNas {
+			return fmt.Errorf("unprotected downlink NAS after registration")
+		}
+		nas, err := nasMessage.Parse(dl.NASPDU.Value, ue.NewSecCtx())
+		if err != nil {
+			return fmt.Errorf("decode downlink NAS: %w", err)
+		}
+		switch nas.(type) {
+		case *nasMessage.CfgUpdateCmd:
+			return nil
+		case *nasMessage.RegAccept:
+			// A freshly protected retransmission needs its own acknowledgement.
+			lastAccept = bytes.Clone(dl.NASPDU.Value)
+			if err := sendRegistrationComplete(conn, ue); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("waiting for configuration update: unexpected NAS %T", nas)
+		}
+	}
+	return fmt.Errorf("configuration update missing: exceeded %d Registration Accept retransmissions", maxRetransmissions)
+}
+
+func sendRegistrationComplete(conn io.Writer, ue *RanUeContext) error {
+	pdu, err := EncodeNasPduWithSecurity(ue, GetRegistrationComplete(nil),
+		nasMessage.SecHdrTypeIntegrityProtectedAndCiphered, true, false)
+	if err != nil {
+		return err
+	}
+	ack, err := GetUplinkNASTransport(ue.AmfUeNgapId, ue.RanUeNgapId, pdu)
+	if err != nil {
+		return err
+	}
+	n, err := conn.Write(ack)
+	if err != nil {
+		return err
+	}
+	if n != len(ack) {
+		return io.ErrShortWrite
+	}
+	return nil
 }
