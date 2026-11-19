@@ -33,8 +33,9 @@ services:
     expose:
       - "8000"
     volumes:
-      - ../config/nrfCfg.yaml:/free5gc/config/nrfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${NRF_CONFIG_FILE:-../config/nrfCfg.yaml}:/free5gc/config/nrfcfg.yaml:ro
+      - ${NRF_PRIVATE_DIR:-../cert}:/free5gc/oauth-private
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -58,7 +59,7 @@ services:
       - "8000"
     volumes:
       - ../config/amfCfg.yaml:/free5gc/config/amfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -83,7 +84,7 @@ services:
       - "8000"
     volumes:
       - ../config/ausfCfg.yaml:/free5gc/config/ausfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -102,7 +103,7 @@ services:
       - "8000"
     volumes:
       - ../config/nssfCfg.yaml:/free5gc/config/nssfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -121,7 +122,7 @@ services:
       - "8000"
     volumes:
       - ../config/pcfCfg.yaml:/free5gc/config/pcfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -141,7 +142,7 @@ services:
     volumes:
       - ../config/smfCfg.yaml:/free5gc/config/smfcfg.yaml
       - ../config/ueRoutingCfg.yaml:/free5gc/config/uerouting.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -162,7 +163,7 @@ services:
       - "8000"
     volumes:
       - ../config/udmCfg.yaml:/free5gc/config/udmcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -183,7 +184,7 @@ services:
       - "8000"
     volumes:
       - ../config/udrCfg.yaml:/free5gc/config/udrcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -205,7 +206,7 @@ services:
       - "8000"
     volumes:
       - ../config/chfCfg.yaml:/free5gc/config/chfcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       DB_URI: mongodb://db/free5gc
       GIN_MODE: release
@@ -229,7 +230,7 @@ services:
       - "8000"
     volumes:
       - ../config/nefCfg.yaml:/free5gc/config/nefcfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       GIN_MODE: release
     networks:
@@ -250,7 +251,7 @@ services:
       - "2121"
     volumes:
       - ../config/webuiCfg.yaml:/free5gc/config/webuicfg.yaml
-      - ../cert:/free5gc/cert
+      - ${FREE5GC_CERT_DIR:-../cert}:/free5gc/cert
     environment:
       - GIN_MODE=release
     networks:
@@ -258,9 +259,9 @@ services:
         aliases:
           - webui
     ports:
-      - "5000:5000"
-      - "2122:2122"
-      - "2121:2121"
+      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:2122:2122"
+      - "127.0.0.1:2121:2121"
     depends_on:
       db:
         condition: service_started
