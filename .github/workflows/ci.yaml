@@ -46,6 +46,12 @@ jobs:
           docker compose -f "$BUILD_COMPOSE_IT_FILE" up -d --wait --wait-timeout "$TIMEOUT"
           docker compose -f "$BUILD_COMPOSE_IT_FILE" down
 
+      - name: Run OAuth access-control and registration tests
+        run: |
+          ./ci-test-it.sh --build --test TestOAuthAccessControl
+          ./ci-test-it.sh --build --oauth --test TestRegistration
+          ./ci-test-it.sh --build --oauth --test TestOAuthAccessControl
+
       - name: Run basic tests
         run: |
           ./ci-test-it.sh --build --test TestRegistration
@@ -115,6 +121,9 @@ jobs:
         run: |
           docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" up -d --wait --wait-timeout "$TIMEOUT"
           docker compose -f "$BUILD_COMPOSE_E2E_ULCL_FILE" down
+
+      - name: Run OAuth charging tests
+        run: ./ci-test-e2e-basic.sh --build --oauth --test TestRegPduCharging
 
       - name: Run E2E ULCL tests
         run: |

@@ -14,7 +14,7 @@ set -e
 # get token
 echo "Getting token..."
 
-LOGIN_RESPONSE=$(curl -s -X POST http://webui:5000/api/login \
+LOGIN_RESPONSE=$(curl -sS --fail-with-body --connect-timeout 5 --max-time 30 -X POST http://webui:5000/api/login \
 -H "Content-Type: application/json" \
 -d @"$2")
 
@@ -22,13 +22,11 @@ TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.access_token')
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
     echo "Failed to get token!"
-    echo "Server response: $LOGIN_RESPONSE"
     exit 1
 fi
 
 if [[ ! "$TOKEN" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
     echo "Invalid token format!"
-    echo "Token: $TOKEN"
     exit 1
 fi
 
@@ -41,7 +39,7 @@ TOKEN=$(echo -n "$TOKEN" | tr -d '\n' | tr -d ' ')
 
 case "$1" in
     "get")
-        CHARGING_RECORD_RESPONSE=$(curl -s -X GET "http://webui:5000/api/charging-record" \
+        CHARGING_RECORD_RESPONSE=$(curl -sS --fail-with-body --connect-timeout 5 --max-time 30 -X GET "http://webui:5000/api/charging-record" \
         -H "Token: $TOKEN")
         ;;
     *)

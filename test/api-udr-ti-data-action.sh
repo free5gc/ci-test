@@ -22,11 +22,13 @@ case "$1" in
             http://udr.free5gc.org:8000/nudr-dr/v2/application-data/influenceData/1
         ;;
     "get")
-        curl -X GET -H "Content-Type: application/json" \
+        curl -sS --fail-with-body --connect-timeout 5 --max-time 20 \
+            -X GET -H "Content-Type: application/json" \
             http://udr.free5gc.org:8000/nudr-dr/v2/application-data/influenceData
         ;;
     "delete")
-        curl -X DELETE -H "Content-Type: application/json" \
+        curl -sS --fail-with-body --connect-timeout 5 --max-time 20 \
+            -X DELETE -H "Content-Type: application/json" \
             http://udr.free5gc.org:8000/nudr-dr/v2/application-data/influenceData/1
         ;;
     *)

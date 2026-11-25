@@ -14,7 +14,7 @@ set -e
 # get token
 echo "Getting token..."
 
-LOGIN_RESPONSE=$(curl -s -X POST http://webui:5000/api/login \
+LOGIN_RESPONSE=$(curl -sS --fail-with-body --connect-timeout 5 --max-time 30 -X POST http://webui:5000/api/login \
 -H "Content-Type: application/json" \
 -d @json/webconsole-login-data.json)
 
@@ -22,13 +22,11 @@ TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.access_token')
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
     echo "Failed to get token!"
-    echo "Server response: $LOGIN_RESPONSE"
     exit 1
 fi
 
 if [[ ! "$TOKEN" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
     echo "Invalid token format!"
-    echo "Token: $TOKEN"
     exit 1
 fi
 
@@ -47,13 +45,13 @@ echo "Using IMSI: $IMSI, PLMN ID: $PLMN_ID"
 
 case "$1" in
     "post")
-        SUBSCRIBE_RESPONSE=$(curl -s -X POST "http://webui:5000/api/subscriber/imsi-$IMSI/$PLMN_ID" \
+        SUBSCRIBE_RESPONSE=$(curl -sS --fail-with-body --connect-timeout 5 --max-time 30 -X POST "http://webui:5000/api/subscriber/imsi-$IMSI/$PLMN_ID" \
         -H "Content-Type: application/json" \
         -H "Token: $TOKEN" \
         -d @"$2")
         ;;
     "delete")
-        SUBSCRIBE_RESPONSE=$(curl -s -X DELETE "http://webui:5000/api/subscriber/imsi-$IMSI/$PLMN_ID" \
+        SUBSCRIBE_RESPONSE=$(curl -sS --fail-with-body --connect-timeout 5 --max-time 30 -X DELETE "http://webui:5000/api/subscriber/imsi-$IMSI/$PLMN_ID" \
         -H "Content-Type: application/json" \
         -H "Token: $TOKEN" \
         -d @"$2")
