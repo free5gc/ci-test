@@ -1,0 +1,41 @@
+info:
+  version: 1.0.1
+  description: SCP initial local configuration
+
+configuration:
+  idleTimeout: 60s # HTTP server idle timeout; 0s disables it
+  readIdleTimeout: 60s # HTTP/2 client idle time before sending a health-check ping; 0s disables it
+  pingTimeout: 15s # HTTP/2 health-check ping response timeout; 0s uses the transport default
+  sbi: # Service-based interface information
+    scheme: http # the protocol for sbi (http or https)
+    registerIPv4: scp.free5gc.org # IP used to register to NRF
+    bindingIPv4: scp.free5gc.org  # IP used to bind the service
+    port: 8000 # port used to bind the service
+    tls: # the local path of TLS key
+      verify: false # Verify outgoing SBI HTTPS certificates
+      pem: cert/scp.pem # SCP TLS Certificate
+      key: cert/scp.key # SCP TLS Private key
+  nrfUri: http://nrf.free5gc.org:8000 # a valid URI of NRF
+  nrfCertPem: cert/nrf.pem
+  # TS 29.500 §6.10.11.2.1: token acquisition on behalf of the consumer for delegated discovery.
+  delegatedOAuth: false
+  serviceList: # the SBI services proxied by this SCP
+    - serviceName: nausf-auth
+    - serviceName: nudm-ueau
+    - serviceName: nudm-sdm
+    - serviceName: nudr-dr
+  amfUri: http://amf.free5gc.org:8000
+  ausfUri: http://ausf.free5gc.org:8000
+  chfUri: http://chf.free5gc.org:8000
+  nefUri: http://nef.free5gc.org:8000
+  nssfUri: http://nssf.free5gc.org:8000
+  pcfUri: http://pcf.free5gc.org:8000
+  smfUri: http://smf.free5gc.org:8000
+  udmUri: http://udm.free5gc.org:8000
+  udrUri: http://udr.free5gc.org:8000
+  upfUri: http://upf.free5gc.org:8000
+
+logger: # log output setting
+  enable: true # true or false
+  level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+  reportCaller: false # enable the caller report or not, value: true or false

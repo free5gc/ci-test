@@ -13,7 +13,7 @@
 #
 ##########################
 
-TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf"
+TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf|TestServiceProxy"
 
 COMPOSE_FILE="composes/build/docker-compose-it.yaml"
 CI_COMPOSE_FILE="composes/docker-compose-ci-it.yaml"
@@ -74,6 +74,16 @@ save_logs() {
     done
     echo "Docker compose logs saved to $LOG_DIR"
 }
+
+# TestServiceProxy routes AUSF through SCP: update configs before the compose is up,
+# and always restore them when this script exits (pass, fail or interrupt)
+if [ "$TARGET_TEST" = "TestServiceProxy" ]; then
+    trap './script/scp.sh -d' EXIT
+    if ! ./script/scp.sh -e; then
+        echo "Error: Failed to enable SCP configuration"
+        exit 1
+    fi
+fi
 
 # force-cleanup any leftovers from a previous run that failed to tear down cleanly
 docker compose -f "$TARGET_COMPOSE_FILE" down --remove-orphans -v || true
@@ -168,6 +178,10 @@ case "$TARGET_TEST" in
     ;;
     "TestTngf")
         docker exec it /bin/bash -c "cd /root/test && ./test-it-tngf.sh"
+        exit_code=$?
+    ;;
+    "TestServiceProxy")
+        docker exec it /bin/bash -c "cd /root/test && ./test-it-serviceproxy.sh"
         exit_code=$?
     ;;
 esac

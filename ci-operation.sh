@@ -14,7 +14,9 @@
 ##########################
 
 usage() {
-    echo "usage: ./ci-operation.sh [action] [target]"
+    echo "usage: ./ci-operation.sh [action] [target] [-o | --oauth]"
+    echo "  -o, --oauth: (last argument) enable NRF oauth (./script/oauth.sh -e) before tests and disable it (./script/oauth.sh -d) afterwards"
+    echo "               (applies to: test it | it-all | basic | ulcl)"
     echo "  - pull: remove the existed free5gc repo and clone a new free5gc with its NFs"
     echo "  - fetch [NF] [PR#]: fetch the target NF's PR"
     echo "  - testAll: run all free5gc tests"
@@ -35,7 +37,7 @@ IT_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-it.yaml"
 E2E_BASIC_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-basic.yaml"
 E2E_ULCL_COMPOSE_FILE="$COMPOSE_DIR/docker-compose-e2e-ulcl.yaml"
 
-IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf"
+IT_TEST_POOL="TestRegistration|TestDeregistration|TestGUTIRegistration|TestEAPAKAPrimeAuthentication|TestDuplicateRegistration|TestServiceRequest|TestPDUSessionReleaseRequest|TestNasReroute|TestN2Handover|TestXnHandover|TestPaging|TestReSynchronization|TestMultiAmfRegistration|TestDC|TestDynamicDC|TestXnDcHandover|TestRequestTwoPDUSessions|TestN3iwf|TestTngf|TestServiceProxy"
 
 # one timestamp per ci-operation run, so all tests in a batch log under the same folder
 RUN_DATETIME="$(date +%Y%m%d-%H%M%S)"
@@ -97,6 +99,19 @@ main() {
             esac
         ;;
         "test")
+            if [ "$OAUTH" = true ]; then
+                case "$2" in
+                    "it"|"it-all"|"basic"|"ulcl")
+                        # always restore oauth=false when the test run ends (pass, fail or interrupt)
+                        trap './script/oauth.sh -d' EXIT
+                        if ! ./script/oauth.sh -e; then
+                            echo "Failed to enable oauth"
+                            exit 1
+                        fi
+                    ;;
+                esac
+            fi
+
             case "$2" in
                 "it")
                     ./ci-test-it.sh --test $3 --build --log "$RUN_DATETIME"
@@ -147,4 +162,16 @@ main() {
     esac
 }
 
-main "$@"
+# parse the optional oauth flag, which must be the last argument
+OAUTH=false
+ARGS=("$@")
+if [ ${#ARGS[@]} -gt 0 ]; then
+    case "${ARGS[-1]}" in
+        -o|--oauth)
+            OAUTH=true
+            unset 'ARGS[-1]'
+        ;;
+    esac
+fi
+
+main "${ARGS[@]}"

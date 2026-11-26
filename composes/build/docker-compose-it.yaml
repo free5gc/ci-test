@@ -124,6 +124,28 @@ services:
       free5gc-nrf:
         condition: service_healthy
 
+  free5gc-scp: # scp
+    container_name: scp
+    build:
+      context: ../../dockerfiles/nf_scp
+      args:
+        DEBUG_TOOLS: "false"
+    command: ./scp -c ./config/scpcfg.yaml
+    expose:
+      - "8000"
+    volumes:
+      - ../../config/scpCfg.yaml:/free5gc/config/scpcfg.yaml
+      - ../../cert:/free5gc/cert
+    environment:
+      GIN_MODE: release
+    networks:
+      privnet:
+        aliases:
+          - scp.free5gc.org
+    depends_on:
+      free5gc-nrf:
+        condition: service_healthy
+
   free5gc-nssf: # nssf
     container_name: nssf
     build:
@@ -393,6 +415,7 @@ services:
       - free5gc-nrf
       - free5gc-nssf
       - free5gc-pcf
+      - free5gc-scp
       - free5gc-smf
       - free5gc-udm
       - free5gc-udr
