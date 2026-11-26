@@ -163,6 +163,7 @@ jobs:
           ./ci-test-it.sh --test TestReSynchronization
           ./ci-test-it.sh --test TestMultiAmfRegistration
           ./ci-test-it.sh --test TestRequestTwoPDUSessions
+          ./ci-test-it.sh --test TestServiceProxy
 
       - name: Run basic non3gpp tests
         run: |
