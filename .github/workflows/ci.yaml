@@ -62,6 +62,7 @@ jobs:
           ./ci-test-it.sh --build --test TestReSynchronization
           ./ci-test-it.sh --build --test TestMultiAmfRegistration
           ./ci-test-it.sh --build --test TestRequestTwoPDUSessions
+          ./ci-test-it.sh --build --test TestServiceProxy
 
       - name: Run basic non3gpp tests
         run: |
@@ -73,7 +74,7 @@ jobs:
           ./ci-test-it.sh --build --test TestDC
           ./ci-test-it.sh --build --test TestDynamicDC
           ./ci-test-it.sh --build --test TestXnDcHandover
-          
+
       - name: Cleanup docker resources
         if: always()
         run: |
