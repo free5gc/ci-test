@@ -99,7 +99,7 @@ func pingOneOneOneOne(t *testing.T) {
 
 func tiOperation(t *testing.T, operation string, jsonFile ...string) {
 	t.Helper()
-	args := []string{"../api-udr-ti-data-action.sh", operation}
+	args := []string{"../api-nef-ti-data-action.sh", operation}
 	if len(jsonFile) > 0 {
 		args = append(args, "../"+jsonFile[0])
 	}
