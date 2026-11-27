@@ -1,9 +1,11 @@
 name: CI
 
 on:
+  # push to main: run tests with oauth enabled, job names end with " (oauth)"
   push:
     branches:
         - main
+  # pull request: run tests with oauth disabled
   pull_request:
 
 env:
@@ -21,6 +23,7 @@ env:
 
 jobs:
   basic-test:
+    name: basic-test${{ github.event_name == 'push' && ' (oauth)' || '' }}
     runs-on: [self-hosted, linux, x64]
 
     steps:
@@ -32,6 +35,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Enable OAuth
+        if: github.event_name == 'push'
+        run: ./script/oauth.sh -e
 
       - name: Clone free5GC
         run: |
@@ -83,6 +90,7 @@ jobs:
           docker volume prune -a -f
 
   e2e-test:
+    name: e2e-test${{ github.event_name == 'push' && ' (oauth)' || '' }}
     runs-on: [self-hosted, linux, x64]
 
     steps:
@@ -94,6 +102,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Enable OAuth
+        if: github.event_name == 'push'
+        run: ./script/oauth.sh -e
 
       - name: Clone free5GC
         run: |
@@ -130,6 +142,7 @@ jobs:
           docker volume prune -a -f
 
   ci-basic-test:
+    name: ci-basic-test${{ github.event_name == 'push' && ' (oauth)' || '' }}
     runs-on: [self-hosted, linux, x64]
 
     steps:
@@ -141,6 +154,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Enable OAuth
+        if: github.event_name == 'push'
+        run: ./script/oauth.sh -e
 
       - name: Check compose
         run: |
@@ -184,6 +201,7 @@ jobs:
           docker volume prune -a -f
 
   ci-e2e-test:
+    name: ci-e2e-test${{ github.event_name == 'push' && ' (oauth)' || '' }}
     runs-on: [self-hosted, linux, x64]
 
     steps:
@@ -195,6 +213,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Enable OAuth
+        if: github.event_name == 'push'
+        run: ./script/oauth.sh -e
 
       - name: Check E2E basic compose
         run: |
