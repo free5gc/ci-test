@@ -4,7 +4,8 @@
         "sst": 1,
         "sd": ""
     },
-    "interGroupId": "AnyUE",
+    "anyUeInd": true,
+    "notificationDestination": "http://ci-test-af.invalid/ti-notify",
     "trafficFilters": [
         {
             "flowId": 1,

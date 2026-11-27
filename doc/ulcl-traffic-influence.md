@@ -64,7 +64,7 @@ The mixed TI filter includes N6GW and directs its packets toward the MEC exit, w
 
 Full and partial share [ti-data-mec.json](../test/json/ti-data-mec.json); their service filters differ. Mixed reuses [ti-data.json](../test/json/ti-data.json). Subscription files are `webconsole-subscription-data-ti-<case>-<charging>.json`.
 
-`tiOperation(t, "put")` keeps the original payload. An optional path relative to `test/`, such as `tiOperation(t, "put", "json/ti-data-mec.json")`, selects a different payload through the same API helper script.
+`tiOperation(t, "put")` keeps the original payload. An optional path relative to `test/`, such as `tiOperation(t, "put", "json/ti-data-mec.json")`, selects a different payload through the same API helper script ([api-nef-ti-data-action.sh](../test/api-nef-ti-data-action.sh)), which provisions TI through NEF's `3gpp-traffic-influence` API as an AF (with an OAuth token when NRF oauth is enabled).
 
 Overlap cases check connectivity only; charging record assertions remain in the original TI test. Ping success does not verify QFI/QER contents, rate enforcement or final charging settlement. See the [default-route known issue](known-issue-ulcl-default-route.md) if Internet probes fail while local probes succeed.
 
